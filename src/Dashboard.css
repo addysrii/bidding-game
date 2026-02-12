@@ -1,0 +1,526 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.dashboard-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: var(--glass-border);
+}
+
+.header-left h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent-blue);
+  margin: 0;
+}
+
+.header-left span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.header-right {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.purse-meter-container {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  gap: 0.25rem;
+}
+
+.purse-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.meter-track {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+}
+
+.purse-details-mini {
+  font-size: 0.75rem;
+  text-align: right;
+  color: var(--accent-green);
+}
+
+
+.player-card-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+  padding: 0 1rem;
+}
+
+.player-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.live-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent-green);
+  font-weight: 700;
+  border: 1px solid var(--accent-green);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-green);
+  border-radius: 50%;
+}
+
+.player-details {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.player-image-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #334155;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #64748b;
+}
+
+.player-info h2 {
+  font-size: 2.5rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.player-country {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.player-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-box .label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.stat-box .value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.auction-status {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: var(--glass-border);
+}
+
+.current-bid {
+  text-align: center;
+}
+
+.bid-amount {
+  font-size: 2.5rem;
+  color: var(--accent-green);
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Auction Actions */
+.auction-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.action-btn {
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.bid-btn {
+  background-color: var(--accent-green);
+  color: #0f172a;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+}
+
+.sold-btn {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+
+/* Team Grid */
+.team-section h3 {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.team-card {
+  background: var(--bg-card);
+  border: var(--glass-border);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100px;
+}
+
+.team-card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.team-code {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.team-name {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: auto;
+}
+
+.team-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.funds-remaining {
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.player-count {
+  color: var(--text-secondary);
+}
+
+.my-squad-btn {
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.my-squad-btn:hover {
+  background-color: #2563eb;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 100;
+  backdrop-filter: blur(5px);
+}
+
+.squad-modal {
+  background: #1e293b;
+  width: 100%;
+  max-width: 600px;
+  height: 80vh;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.squad-count {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.role-breakdown {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.role-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.role-stat .count {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.role-stat .label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.role-stat .icon {
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
+}
+
+.roster-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.roster-list h3 {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.roster-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.roster-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.p-name {
+  font-weight: 600;
+  flex: 2;
+}
+
+.p-role {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.p-price {
+  flex: 1;
+  text-align: right;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  font-style: italic;
+}
+
+.restricted-notice {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-style: italic;
+}
+
+
+/* responsive */
+@media (max-width: 1024px) {
+  .player-card-container {
+    padding: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .purse-meter-container {
+    width: 100%;
+  }
+
+  .player-card {
+    padding: 1.5rem;
+  }
+
+  .player-details {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .player-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .stat-box .value {
+    font-size: 1.1rem;
+  }
+
+  .auction-status {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-box[style*="align-items: flex-end"] {
+    align-items: center !important;
+  }
+
+  .auction-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}

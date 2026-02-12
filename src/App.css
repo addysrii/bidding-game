@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap');
+
+:root {
+  --gdg-blue: #4285f4;
+  --gdg-red: #ea4335;
+  --gdg-yellow: #fbbc05;
+  --gdg-green: #34a853;
+  --dark-navy: #050b14;
+}
+
+.login-wrapper {
+  background-color: var(--dark-navy);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* BACKGROUND TILTED STRIPES */
+.bg-stripes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.1;
+}
+
+.stripe {
+  position: absolute;
+  width: 30px;
+  height: 200%;
+  transform: rotate(20deg);
+  top: -50%;
+}
+
+.stripe.blue { left: 10%; background: var(--gdg-blue); }
+.stripe.red { left: 35%; background: var(--gdg-red); }
+.stripe.yellow { left: 60%; background: var(--gdg-yellow); }
+.stripe.green { left: 85%; background: var(--gdg-green); }
+
+/* MAIN LAYOUT */
+.main-layout {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  z-index: 10;
+}
+
+.chevron-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chevron-bar {
+  width: 80px;
+  height: 20px;
+  border-radius: 50px;
+  box-shadow: 0 0 20px currentColor;
+}
+
+/* CHEVRON DIRECTIONS */
+.red-chevron { background: var(--gdg-red); color: var(--gdg-red); transform: rotate(135deg); }
+.blue-chevron { background: var(--gdg-blue); color: var(--gdg-blue); transform: rotate(-135deg); }
+.right-side .green-chevron { background: var(--gdg-green); color: var(--gdg-green); transform: rotate(45deg); }
+.right-side .yellow-chevron { background: var(--gdg-yellow); color: var(--gdg-yellow); transform: rotate(-45deg); }
+
+/* TEAM LOGIN GRADIENT TEXT */
+.gdg-font-gradient {
+  font-size: 2.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: linear-gradient(to right, var(--gdg-blue), var(--gdg-red), var(--gdg-yellow), var(--gdg-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 35px;
+}
+
+/* GLASSMORPHISM CARD */
+.login-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 50px 40px;
+  border-radius: 30px;
+  width: 360px;
+  text-align: center;
+}
+
+.input-field {
+  background: rgba(255, 255, 255, 0.12);
+  margin-bottom: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 5px 15px;
+}
+
+input {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  outline: none;
+}
+
+.login-btn {
+  background: var(--gdg-green);
+  color: white;
+  border: none;
+  padding: 15px;
+  width: 100%;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.divider { color: #555; margin: 25px 0; font-size: 0.8rem; font-weight: 900; }
+
+/* FIXED GRADIENT GOOGLE BUTTON */
+.google-btn {
+  background: linear-gradient(45deg, var(--gdg-blue), var(--gdg-red), var(--gdg-yellow), var(--gdg-green));
+  padding: 2px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.2s;
+}
+
+.google-btn:hover { transform: scale(1.02); }
+
+.google-btn-inner {
+  background: rgb(255, 253, 253);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #000000;
+  font-weight: 600;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 900px) {
+  .chevron-side, .bg-stripes { display: none; }
+  .login-card { width: 90%; }
+}

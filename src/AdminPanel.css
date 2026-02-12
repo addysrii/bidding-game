@@ -1,0 +1,252 @@
+.admin-container {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Global scrollbar hide for admin panel */
+.admin-container * {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.admin-container *::-webkit-scrollbar {
+    display: none;
+}
+
+.admin-header h1 {
+    color: #ef4444;
+}
+
+.admin-header {
+    flex-shrink: 0;
+}
+
+.admin-main-layout {
+    display: flex;
+    flex-direction: column;
+    /* Changed from grid to column stack */
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-width: 1600px;
+    /* Increased max-width */
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    /* Prevent body scroll, handle inside components */
+}
+
+/* Main Layout - Centered Column */
+.admin-main-layout.centered-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    align-items: center;
+    gap: 2rem;
+    overflow-y: auto;
+    /* Allow scrolling */
+    padding-bottom: 2rem;
+
+    /* Hide Scrollbar */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.admin-main-layout.centered-layout::-webkit-scrollbar {
+    display: none;
+}
+
+.center-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+}
+
+/* Player Card overrides for Admin Center */
+.center-stage .player-card {
+    width: 95%;
+    max-width: 600px;
+    margin: 0 auto;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1));
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.center-stage .player-info h2 {
+    font-size: 4rem;
+    /* Even larger */
+}
+
+/* Controls Bar - Below Card */
+.admin-controls-bar {
+    display: flex;
+    gap: 2rem;
+    gap: 2rem;
+    width: 100%;
+    /* Full width to center properly */
+    max-width: 600px;
+    /* Match player card width */
+    justify-content: center;
+    /* Center the buttons */
+    margin-top: 2rem;
+}
+
+.control-btn {
+    height: 80px;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Notification Overlay */
+.notification-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    /* Dark translucent background */
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    /* Let clicks pass through if needed, but usually blocks */
+}
+
+.notification-content h1 {
+    font-size: 6rem;
+    font-weight: 900;
+    text-align: center;
+    margin: 0;
+    line-height: 1.2;
+    font-family: 'Rajdhani', sans-serif;
+    transform: uppercase;
+}
+
+/* Teams Section at Bottom */
+.teams-section-full {
+    width: 100%;
+    margin-top: auto;
+    /* Push to bottom */
+    height: auto;
+    /* Fixed height removed to show all teams */
+    min-height: 250px;
+    /* Ensure enough space */
+    background: rgba(15, 23, 42, 0.9);
+    padding: 1rem;
+    overflow-y: auto;
+    /* Allow scrolling if needed, though auto height should fit */
+    flex-shrink: 0;
+
+    /* Hide Scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.teams-section-full::-webkit-scrollbar {
+    display: none;
+}
+
+.teams-section-full h2 {
+    color: white;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+@media (max-width: 1024px) {
+    .player-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .admin-main-layout {
+        overflow-y: auto;
+    }
+
+    .teams-section-full {
+        overflow-y: visible;
+        flex: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .admin-header span {
+        font-size: 0.8rem;
+    }
+
+    .next-btn {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        height: auto;
+    }
+
+    .center-stage .player-info h2 {
+        font-size: 2.5rem;
+    }
+
+    .admin-controls-bar {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .control-btn {
+        width: 100%;
+        height: 60px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Button Styles */
+.sold-btn {
+    background-color: #22c55e;
+    /* Green */
+    color: white;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.unsold-btn {
+    background-color: #ef4444;
+    /* Red */
+    color: white;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.next-btn {
+    background-color: #3b82f6;
+    /* Blue */
+    color: white;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 0 2rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.next-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+}
+
+.next-btn:active {
+    transform: translateY(0);
+}
