@@ -1,0 +1,311 @@
+/* Auction Timer Styling - Neobrutalism Design */
+
+.auction-timer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    border: 5px solid #000;
+    border-radius: 0;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(20, 30, 50, 0.95) 100%);
+    box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 217, 255, 0.3);
+    outline: 3px solid #00D9FF;
+    outline-offset: -8px;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+.timer-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.timer-label {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #FFD700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.6);
+}
+
+/* Timer Display - Circular Progress */
+.timer-display {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timer-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.timer-ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 8;
+}
+
+.timer-ring-progress {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 282.7;
+    stroke-dashoffset: 282.7;
+    transition: stroke-dashoffset 1s linear;
+}
+
+/* Timer Value Display */
+.timer-value {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.time-format {
+    font-size: 3.5rem;
+    font-weight: 900;
+    text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.8);
+    letter-spacing: 2px;
+}
+
+/* Timer Input for Editing */
+.timer-input {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: inherit;
+    text-align: center;
+    width: 150px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 3px solid currentColor;
+    border-radius: 8px;
+    padding: 0.5rem;
+    font-family: 'Rajdhani', monospace;
+    text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.8);
+}
+
+.timer-input:focus {
+    outline: none;
+    box-shadow: 0 0 15px currentColor;
+}
+
+/* Timer Warning */
+.timer-warning {
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #FF006E;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.75rem 1.5rem;
+    border: 3px solid #FF006E;
+    border-radius: 0;
+    background: rgba(255, 6, 110, 0.1);
+    text-shadow: 2px 2px 0px rgba(255, 6, 110, 0.5);
+    box-shadow: 4px 4px 0px rgba(255, 6, 110, 0.3);
+}
+
+/* Timer Controls */
+.timer-controls {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.timer-btn {
+    font-size: 1.2rem;
+    padding: 0.6rem;
+    width: 45px;
+    height: 45px;
+    border: 3px solid #000;
+    border-radius: 0;
+    background: #FFD700;
+    color: #000;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.6);
+}
+
+.timer-btn:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.6);
+    background: #FFA500;
+}
+
+.timer-btn:active:not(:disabled) {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.6);
+}
+
+.timer-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.play-btn {
+    background: #00D9FF;
+}
+
+.play-btn:hover:not(:disabled) {
+    background: #0099FF;
+    box-shadow: 6px 6px 0px rgba(0, 217, 255, 0.4);
+}
+
+.pause-btn {
+    background: #FF006E;
+}
+
+.pause-btn:hover {
+    background: #E60060;
+    box-shadow: 6px 6px 0px rgba(255, 6, 110, 0.3);
+}
+
+.reset-btn {
+    background: #22c55e;
+}
+
+.reset-btn:hover {
+    background: #16a34a;
+    box-shadow: 6px 6px 0px rgba(34, 197, 94, 0.3);
+}
+
+/* Timer Status */
+.timer-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.status-active {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #00D9FF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.5rem 1rem;
+    border: 3px solid #00D9FF;
+    border-radius: 0;
+    background: rgba(0, 217, 255, 0.08);
+    box-shadow: 3px 3px 0px rgba(0, 217, 255, 0.2);
+}
+
+.status-paused {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #FFD700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.5rem 1rem;
+    border: 3px solid #FFD700;
+    border-radius: 0;
+    background: rgba(255, 215, 0, 0.08);
+    box-shadow: 3px 3px 0px rgba(255, 215, 0, 0.2);
+}
+
+.status-expired {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #000;
+    background: #FFD700;
+    padding: 0.5rem 1rem;
+    border: 4px solid #000;
+    border-radius: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .auction-timer-container {
+        max-width: 280px;
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+
+    .timer-display {
+        width: 160px;
+        height: 160px;
+    }
+
+    .time-format {
+        font-size: 2.5rem;
+    }
+
+    .timer-label {
+        font-size: 0.8rem;
+    }
+
+    .timer-warning {
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .timer-controls {
+        gap: 0.5rem;
+    }
+
+    .timer-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .status-active,
+    .status-paused,
+    .status-expired {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auction-timer-container {
+        max-width: 100%;
+        margin: 1rem;
+    }
+
+    .timer-display {
+        width: 140px;
+        height: 140px;
+    }
+
+    .time-format {
+        font-size: 2rem;
+    }
+
+    .timer-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .timer-input {
+        font-size: 2rem;
+        width: 120px;
+    }
+}
