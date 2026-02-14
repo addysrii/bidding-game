@@ -140,7 +140,7 @@ body.admin-page *::-webkit-scrollbar {
 /* Auction Log Card - right side */
 .admin-log-card {
     flex-shrink: 0;
-    width: 350px;
+    width: 500px;
     height: 400px; /* ADDED: Limit height */
     background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.12);
