@@ -11,6 +11,7 @@ const AdminPanel = () => {
     const { teams, currentPlayer, highestBidder, sellPlayer, markUnsold, nextPlayer } = useAuction();
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [auctionLog, setAuctionLog] = useState([]);
 
     useEffect(() => {
         document.documentElement.classList.add('admin-page');
@@ -24,6 +25,15 @@ const AdminPanel = () => {
     const handleSell = () => {
         if (!highestBidder) return;
         const winningTeam = teams.find(t => t.id === highestBidder);
+        const price = currentPlayer?.currentBid != null ? `${currentPlayer.currentBid} L` : '—';
+
+        setAuctionLog(prev => [{
+            id: Date.now(),
+            playerName: currentPlayer?.name || '—',
+            status: 'SOLD',
+            price,
+            teamName: winningTeam?.name || highestBidder,
+        }, ...prev]);
 
         setNotification({
             type: 'SOLD',
@@ -36,6 +46,17 @@ const AdminPanel = () => {
         setTimeout(() => {
             setNotification(null);
         }, 2000);
+    };
+
+    const handleUnsold = () => {
+        setAuctionLog(prev => [{
+            id: Date.now(),
+            playerName: currentPlayer?.name || '—',
+            status: 'UNSOLD',
+            price: '—',
+            teamName: '—',
+        }, ...prev]);
+        markUnsold();
     };
 
     return (
@@ -53,41 +74,63 @@ const AdminPanel = () => {
             </header>
 
             <div className="admin-main-layout centered-layout">
-                <div className="center-stage">
-                    <div className="card-animation-container" style={{ position: 'relative', width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center' }}>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentPlayer ? currentPlayer.id : 'empty'}
-                                initial={{ opacity: 0, scale: 0.9, y: 50 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: -50 }}
-                                transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 25 }}
-                                style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
+                <div className="admin-stage-row">
+                    <div className="center-stage">
+                        <div className="card-animation-container" style={{ position: 'relative', width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center' }}>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentPlayer ? currentPlayer.id : 'empty'}
+                                    initial={{ opacity: 0, scale: 0.9, y: 50 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -50 }}
+                                    transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 25 }}
+                                    style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
+                                >
+                                    <PlayerCard
+                                        player={currentPlayer}
+                                        currentBid={currentPlayer?.currentBid}
+                                        highestBidder={highestBidder ? (teams.find(t => t.id === highestBidder)?.name ?? highestBidder) : null}
+                                        isAdmin={true}
+                                    />
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+
+                        <div className="admin-controls-bar">
+                            <button
+                                className="control-btn sold-btn"
+                                onClick={handleSell}
+                                disabled={!highestBidder}
                             >
-                                <PlayerCard
-                                    player={currentPlayer}
-                                    currentBid={currentPlayer?.currentBid}
-                                    highestBidder={highestBidder ? (teams.find(t => t.id === highestBidder)?.name ?? highestBidder) : null}
-                                    isAdmin={true}
-                                />
-                            </motion.div>
-                        </AnimatePresence>
+                                SOLD
+                            </button>
+                            <button
+                                className="control-btn unsold-btn"
+                                onClick={handleUnsold}
+                            >
+                                UNSOLD
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="admin-controls-bar">
-                        <button
-                            className="control-btn sold-btn"
-                            onClick={handleSell}
-                            disabled={!highestBidder}
-                        >
-                            SOLD
-                        </button>
-                        <button
-                            className="control-btn unsold-btn"
-                            onClick={markUnsold}
-                        >
-                            UNSOLD
-                        </button>
+                    <div className="admin-log-card">
+                        <h3 className="admin-log-title">Auction Log</h3>
+                        <div className="admin-log-list">
+                            {auctionLog.length === 0 ? (
+                                <p className="admin-log-empty">No activity yet.</p>
+                            ) : (
+                                auctionLog.map(entry => (
+                                    <div key={entry.id} className={`admin-log-entry admin-log-entry--${entry.status.toLowerCase()}`}>
+                                        <span className="admin-log-player">{entry.playerName}</span>
+                                        <span className="admin-log-status">{entry.status}</span>
+                                        <span className="admin-log-price">{entry.price}</span>
+                                        {entry.teamName && entry.teamName !== '—' && (
+                                            <span className="admin-log-team">{entry.teamName}</span>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
 
