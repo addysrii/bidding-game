@@ -12,21 +12,27 @@ const AdminPanel = () => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [notification, setNotification] = useState(null);
 
+    useEffect(() => {
+        document.documentElement.classList.add('admin-page');
+        document.body.classList.add('admin-page');
+        return () => {
+            document.documentElement.classList.remove('admin-page');
+            document.body.classList.remove('admin-page');
+        };
+    }, []);
+
     const handleSell = () => {
         if (!highestBidder) return;
         const winningTeam = teams.find(t => t.id === highestBidder);
 
-        // Show notification
         setNotification({
             type: 'SOLD',
             message: `SOLD TO ${winningTeam ? winningTeam.name.toUpperCase() : highestBidder}`,
             color: winningTeam?.color || '#22c55e'
         });
 
-        // Perform Sell
         sellPlayer();
 
-        // Clear after 2 seconds
         setTimeout(() => {
             setNotification(null);
         }, 2000);
@@ -60,8 +66,8 @@ const AdminPanel = () => {
                             >
                                 <PlayerCard
                                     player={currentPlayer}
-                                    currentBid={currentPlayer.currentBid}
-                                    highestBidder={highestBidder}
+                                    currentBid={currentPlayer?.currentBid}
+                                    highestBidder={highestBidder ? (teams.find(t => t.id === highestBidder)?.name ?? highestBidder) : null}
                                     isAdmin={true}
                                 />
                             </motion.div>
@@ -87,11 +93,49 @@ const AdminPanel = () => {
 
                 <div className="teams-section-full">
                     <h2>Team Overview</h2>
-                    <TeamGrid
-                        teams={teams}
-                        onTeamClick={(team) => setSelectedTeam(team)}
-                        title={null}
-                    />
+                    <div className="teams-with-purse">
+                        {teams.map(team => {
+                            const purseNum = parseFloat((team.funds || '0').replace(' Cr', '')) || 0;
+                            const initialPurse = 100;
+                            const pursePercent = initialPurse > 0 ? (purseNum / initialPurse) * 100 : 0;
+                            return (
+                            <div key={team.id} className="team-purse-container">
+                                <div className="team-purse-display">
+                                    <div className="purse-info">
+                                        <span className="team-name-label" style={{ color: team.color }}>
+                                            {team.name}
+                                        </span>
+                                        <div className="purse-amount">
+                                            <span className="currency">₹</span>
+                                            <span className="amount">{purseNum.toLocaleString('en-IN')}</span>
+                                            <span className="label">Cr</span>
+                                        </div>
+                                        <div className="purse-bar">
+                                            <div 
+                                                className="purse-fill" 
+                                                style={{ 
+                                                    width: `${Math.min(pursePercent, 100)}%`,
+                                                    background: `linear-gradient(90deg, ${team.color}dd, ${team.color})`
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div 
+                                    className="team-card-wrapper"
+                                    onClick={() => setSelectedTeam(team)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <TeamGrid
+                                        teams={[team]}
+                                        onTeamClick={(t) => setSelectedTeam(t)}
+                                        title={null}
+                                    />
+                                </div>
+                            </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 

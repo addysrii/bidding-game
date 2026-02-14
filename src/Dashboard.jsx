@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import PlayerCard from './components/PlayerCard';
 import TeamGrid from './components/TeamGrid';
@@ -18,6 +18,15 @@ const Dashboard = () => {
     const totalPurse = 100; // Cr
     const currentFunds = parseFloat(myTeam.funds.replace(' Cr', ''));
     const spent = (totalPurse - currentFunds).toFixed(1);
+
+    useEffect(() => {
+        document.documentElement.classList.add('dashboard-page');
+        document.body.classList.add('dashboard-page');
+        return () => {
+            document.documentElement.classList.remove('dashboard-page');
+            document.body.classList.remove('dashboard-page');
+        };
+    }, []);
 
     const handleBid = () => {
         // Logic to increment bid. State is managed in context.

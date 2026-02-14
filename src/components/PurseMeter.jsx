@@ -7,10 +7,14 @@ const PurseMeter = ({ total, spent, remaining }) => {
     // For visual simplicity, let's assume total is always 100 for percentage calculation 
     // or we parse the strings.
 
-    const parseAmount = (str) => parseFloat(str.replace('₹', '').replace(' Cr', ''));
-    const totalVal = parseAmount(total);
+    const parseAmount = (str) => {
+        if (str == null || str === '') return 0;
+        const num = parseFloat(String(str).replace(/₹| Cr/g, '').trim());
+        return isNaN(num) ? 0 : num;
+    };
+    const totalVal = parseAmount(total) || 100;
     const spentVal = parseAmount(spent);
-    const percentage = (spentVal / totalVal) * 100;
+    const percentage = totalVal > 0 ? (spentVal / totalVal) * 100 : 0;
 
     return (
         <div className="purse-meter-container">
