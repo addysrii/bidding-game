@@ -24,46 +24,13 @@ body {
   min-height: 100vh;
   padding: 2rem;
   background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.dashboard-container::-webkit-scrollbar {
-  display: none !important;
-}
-
-.dashboard-container,
-.dashboard-container * {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.dashboard-container ::-webkit-scrollbar,
-.dashboard-container *::-webkit-scrollbar {
-  display: none !important;
-  width: 0;
-  height: 0;
-}
-
-html.dashboard-page,
-body.dashboard-page {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-html.dashboard-page::-webkit-scrollbar,
-body.dashboard-page::-webkit-scrollbar,
-html.dashboard-page *::-webkit-scrollbar,
-body.dashboard-page *::-webkit-scrollbar {
-  display: none !important;
-  width: 0;
-  height: 0;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: var(--glass-border);
 }
