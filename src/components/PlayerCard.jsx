@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const PlayerCard = ({ player, onBid, currentBid, highestBidder, isAdmin }) => {
+const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin }) => {
     if (!player) return null;
 
     return (
@@ -80,13 +80,22 @@ const PlayerCard = ({ player, onBid, currentBid, highestBidder, isAdmin }) => {
 
             <div className="auction-actions">
                 {!isAdmin && (
-                    <motion.button
-                        className="action-btn bid-btn"
-                        whileTap={{ scale: 0.95 }}
-                        onClick={onBid}
-                    >
-                        BID (+20L)
-                    </motion.button>
+                    <>
+                        <motion.button
+                            className="action-btn skip-btn"
+                            whileTap={{ scale: 0.95 }}
+                            onClick={onSkip}
+                        >
+                            SKIP
+                        </motion.button>
+                        <motion.button
+                            className="action-btn bid-btn"
+                            whileTap={{ scale: 0.95 }}
+                            onClick={onBid}
+                        >
+                            BID (+20L)
+                        </motion.button>
+                    </>
                 )}
             </div>
         </motion.div>

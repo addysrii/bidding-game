@@ -29,6 +29,11 @@ const Dashboard = () => {
         placeBid(myTeamId, currentPlayer.currentBid + increment);
     };
 
+    const handleSkip = () => {
+        console.log("Player skipped");
+        // Add logic if needed, e.g., move to next player if admin allows or just mark local skip
+    };
+
     return (
         <div className="dashboard-container">
             <header className="dashboard-header">
@@ -48,6 +53,7 @@ const Dashboard = () => {
                     currentBid={currentPlayer.currentBid}
                     highestBidder={highestBidder}
                     onBid={handleBid}
+                    onSkip={handleSkip}
                     // onSold moved to Admin Panel
                     isMyTeamBid={highestBidder === myTeamId}
                 />

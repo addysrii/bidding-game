@@ -4,7 +4,6 @@ import './AdminPanel.css';
 import PlayerCard from './components/PlayerCard';
 import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
-import AuctionTimer from './components/AuctionTimer';
 import { useAuction } from './context/AuctionContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,8 +11,6 @@ const AdminPanel = () => {
     const { teams, currentPlayer, highestBidder, sellPlayer, markUnsold, nextPlayer } = useAuction();
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [notification, setNotification] = useState(null);
-    const [timerDuration, setTimerDuration] = useState(60);
-    const [timerKey, setTimerKey] = useState(0);
 
     const handleSell = () => {
         if (!highestBidder) return;
@@ -35,11 +32,6 @@ const AdminPanel = () => {
         }, 2000);
     };
 
-    const handleTimerChange = (seconds) => {
-        setTimerDuration(Math.max(10, Math.min(300, seconds))); // Min 10s, Max 5min
-        setTimerKey(prev => prev + 1); // Reset timer
-    };
-
     return (
         <div className="dashboard-container admin-container">
             <header className="dashboard-header admin-header">
@@ -55,16 +47,6 @@ const AdminPanel = () => {
             </header>
 
             <div className="admin-main-layout centered-layout">
-
-                {/* ye timmer kai liyai hai commenting for now as of no use */}
-
-                {/* <div className="timer-wrapper">
-                    <AuctionTimer 
-                        key={timerKey}
-                        initialSeconds={timerDuration}
-                        onTimerChange={handleTimerChange}
-                    />
-                </div> */}
                 <div className="center-stage">
                     <div className="card-animation-container" style={{ position: 'relative', width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center' }}>
                         <AnimatePresence mode="wait">
@@ -102,7 +84,6 @@ const AdminPanel = () => {
                         </button>
                     </div>
                 </div>
-                
 
                 <div className="teams-section-full">
                     <h2>Team Overview</h2>
