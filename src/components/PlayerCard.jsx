@@ -1,12 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin }) => {
+const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin, cardTheme }) => {
     if (!player) return null;
 
     return (
         <motion.div
             className="player-card"
+            style={cardTheme || {}}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -17,7 +18,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin 
                     animate={{ opacity: [1, 0.5, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                 />
-                LIVE
+                {player?.isClosed ? player?.status || 'CLOSED' : 'LIVE'}
             </div>
 
             <div className="player-details">

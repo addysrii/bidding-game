@@ -79,6 +79,7 @@ const SquadModal = ({ team, onClose, isMyTeam, isAdmin }) => {
                                         <li key={index} className="roster-item">
                                             <span className="p-name">{player.name}</span>
                                             <span className="p-role">{player.role}</span>
+                                            <span className="p-role">{player.assignedCard?.label || 'Default Card'}</span>
                                             <span className="p-price">{player.soldPrice}</span>
                                         </li>
                                     ))}
