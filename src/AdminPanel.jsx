@@ -76,7 +76,7 @@ const AdminPanel = () => {
             <div className="admin-main-layout centered-layout">
                 <div className="admin-stage-row">
                     <div className="center-stage">
-                        <div className="card-animation-container" style={{ position: 'relative', width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center' }}>
+                        <div className="card-animation-container">
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={currentPlayer ? currentPlayer.id : 'empty'}
@@ -84,7 +84,7 @@ const AdminPanel = () => {
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95, y: -50 }}
                                     transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 25 }}
-                                    style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
+                                    style={{ width: '100%' }}
                                 >
                                     <PlayerCard
                                         player={currentPlayer}
@@ -142,40 +142,40 @@ const AdminPanel = () => {
                             const initialPurse = 100;
                             const pursePercent = initialPurse > 0 ? (purseNum / initialPurse) * 100 : 0;
                             return (
-                            <div key={team.id} className="team-purse-container">
-                                <div className="team-purse-display">
-                                    <div className="purse-info">
-                                        <span className="team-name-label" style={{ color: team.color }}>
-                                            {team.name}
-                                        </span>
-                                        <div className="purse-amount">
-                                            <span className="currency">₹</span>
-                                            <span className="amount">{purseNum.toLocaleString('en-IN')}</span>
-                                            <span className="label">Cr</span>
-                                        </div>
-                                        <div className="purse-bar">
-                                            <div 
-                                                className="purse-fill" 
-                                                style={{ 
-                                                    width: `${Math.min(pursePercent, 100)}%`,
-                                                    background: `linear-gradient(90deg, ${team.color}dd, ${team.color})`
-                                                }}
-                                            />
+                                <div key={team.id} className="team-purse-container">
+                                    <div className="team-purse-display">
+                                        <div className="purse-info">
+                                            <span className="team-name-label" style={{ color: team.color }}>
+                                                {team.name}
+                                            </span>
+                                            <div className="purse-amount">
+                                                <span className="currency">₹</span>
+                                                <span className="amount">{purseNum.toLocaleString('en-IN')}</span>
+                                                <span className="label">Cr</span>
+                                            </div>
+                                            <div className="purse-bar">
+                                                <div
+                                                    className="purse-fill"
+                                                    style={{
+                                                        width: `${Math.min(pursePercent, 100)}%`,
+                                                        background: `linear-gradient(90deg, ${team.color}dd, ${team.color})`
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
+                                    <div
+                                        className="team-card-wrapper"
+                                        onClick={() => setSelectedTeam(team)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <TeamGrid
+                                            teams={[team]}
+                                            onTeamClick={(t) => setSelectedTeam(t)}
+                                            title={null}
+                                        />
+                                    </div>
                                 </div>
-                                <div 
-                                    className="team-card-wrapper"
-                                    onClick={() => setSelectedTeam(team)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <TeamGrid
-                                        teams={[team]}
-                                        onTeamClick={(t) => setSelectedTeam(t)}
-                                        title={null}
-                                    />
-                                </div>
-                            </div>
                             );
                         })}
                     </div>
