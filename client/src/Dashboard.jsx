@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
 import SquadModal from './components/SquadModal';
+import TeamGrid from './components/TeamGrid';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
 
@@ -25,6 +26,7 @@ const Dashboard = () => {
     const [lastAdminEvent, setLastAdminEvent] = useState('Waiting for admin activity...');
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
+    const [showTeamsView, setShowTeamsView] = useState(false);
     const socketRef = useRef(null);
 
     // Derived state for My Team
@@ -149,8 +151,13 @@ const Dashboard = () => {
                 </div>
 
                 <div className="header-right">
-                    <div className={`live-indicator ${breakSecondsLeft > 0 ? 'break' : ''}`}>
-                        {breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'BIDDING OPEN'}
+                    <div className="view-toggle-container">
+                        <button
+                            className={`view-toggle-btn ${showTeamsView ? 'back-btn' : ''}`}
+                            onClick={() => setShowTeamsView(!showTeamsView)}
+                        >
+                            {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAMS')}
+                        </button>
                     </div>
                     <div className="socket-banner">
                         <span className={`socket-pill socket-pill--${socketStatus.toLowerCase()}`}>{socketStatus}</span>
@@ -159,59 +166,69 @@ const Dashboard = () => {
                 </div>
             </header>
 
-            <div className="projector-main">
-                <section className="player-details-panel">
-                    <div className="player-image-frame">
-                        {currentPlayer?.image ? (
-                            <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
-                        ) : (
-                            <div className="player-image-placeholder-modern">👤</div>
-                        )}
-                    </div>
-                    <div className="player-text-info">
-                        <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
-                        <div className="stats-grid">
-                            <div className="stat-item">
-                                <span className="stat-label">Base Price</span>
-                                <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Country</span>
-                                <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Role</span>
-                                <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Status</span>
-                                <span className={`stat-value ${currentPlayer?.isClosed ? 'status-closed' : 'status-open'}`}>
-                                    {(currentPlayer?.status || 'OPEN').toUpperCase()}
-                                </span>
+            {showTeamsView ? (
+                <div className="teams-view-screen">
+                    <TeamGrid
+                        teams={teams}
+                        onTeamClick={setSelectedTeam}
+                        title="ALL TEAMS SQUADS"
+                    />
+                </div>
+            ) : (
+                <div className="projector-main">
+                    <section className="player-details-panel">
+                        <div className="player-image-frame">
+                            {currentPlayer?.image ? (
+                                <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                            ) : (
+                                <div className="player-image-placeholder-modern">👤</div>
+                            )}
+                        </div>
+                        <div className="player-text-info">
+                            <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
+                            <div className="stats-grid">
+                                <div className="stat-item">
+                                    <span className="stat-label">Base Price</span>
+                                    <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Country</span>
+                                    <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Role</span>
+                                    <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Status</span>
+                                    <span className={`stat-value ${currentPlayer?.isClosed ? 'status-closed' : 'status-open'}`}>
+                                        {(currentPlayer?.status || 'OPEN').toUpperCase()}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section className="bid-details-panel">
-                    <div className="bid-box current-bid-box">
-                        <span className="box-label">Current Bid</span>
-                        <div className="bid-amount">₹ {currentBidCr} CR</div>
-                    </div>
+                    <section className="bid-details-panel">
+                        <div className="bid-box current-bid-box">
+                            <span className="box-label">Current Bid</span>
+                            <div className="bid-amount">₹ {currentBidCr} CR</div>
+                        </div>
 
-                    <div className="bid-box team-box">
-                        <span className="box-label">Highest Bid</span>
-                        <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
-                        <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
-                    </div>
+                        <div className="bid-box team-box">
+                            <span className="box-label">Highest Bid</span>
+                            <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
+                            <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                        </div>
 
-                    <div className="bid-box my-team-box">
-                        <span className="box-label">Mumbai Mavericks</span>
-                        <div className="my-funds">Remaining: ₹ {myTeam.funds}</div>
-                        <div className="my-funds-sub">Spent: ₹ {spent} Cr</div>
-                    </div>
-                </section>
-            </div>
+                        <div className="bid-box my-team-box">
+                            <span className="box-label">Mumbai Mavericks</span>
+                            <div className="my-funds">Remaining: ₹ {myTeam.funds}</div>
+                            <div className="my-funds-sub">Spent: ₹ {spent} Cr</div>
+                        </div>
+                    </section>
+                </div>
+            )}
 
             {selectedTeam && (
                 <SquadModal
