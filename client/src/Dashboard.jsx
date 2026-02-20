@@ -27,7 +27,12 @@ const Dashboard = () => {
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const [showTeamsView, setShowTeamsView] = useState(false);
+    const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
+
+    const scrollToTeams = () => {
+        teamsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     // Derived state for My Team
     const myTeam = teams.find(t => t.id === "MUM") || { funds: "100 Cr", players: 0, roster: [] };
@@ -156,7 +161,7 @@ const Dashboard = () => {
                             className={`view-toggle-btn ${showTeamsView ? 'back-btn' : ''}`}
                             onClick={() => setShowTeamsView(!showTeamsView)}
                         >
-                            {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAMS')}
+                            {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAM SQUADS')}
                         </button>
                     </div>
                     <div className="socket-banner">
@@ -171,7 +176,8 @@ const Dashboard = () => {
                     <TeamGrid
                         teams={teams}
                         onTeamClick={setSelectedTeam}
-                        title="ALL TEAMS SQUADS"
+                        title="TEAM SQUADS OVERVIEW"
+                        hidePurse={true}
                     />
                 </div>
             ) : (
