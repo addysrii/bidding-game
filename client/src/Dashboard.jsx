@@ -28,6 +28,8 @@ const Dashboard = () => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
+    const overlayTimerRef = useRef(null);
+    const [actionOverlay, setActionOverlay] = useState(null);
 
     const scrollToTeams = () => {
         teamsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,6 +62,24 @@ const Dashboard = () => {
     }, [breakEndsAt]);
 
     useEffect(() => {
+        return () => {
+            if (overlayTimerRef.current) {
+                clearTimeout(overlayTimerRef.current);
+            }
+        };
+    }, []);
+
+    const showActionAnimation = (type, message) => {
+        if (overlayTimerRef.current) {
+            clearTimeout(overlayTimerRef.current);
+        }
+        setActionOverlay({ type, message });
+        overlayTimerRef.current = setTimeout(() => {
+            setActionOverlay(null);
+        }, 1800);
+    };
+
+    useEffect(() => {
         const isProd = import.meta.env.PROD;
         const socket = io(SOCKET_URL, {
             transports: isProd ? ['polling'] : ['polling', 'websocket'],
@@ -88,9 +108,17 @@ const Dashboard = () => {
                     adminName: event.adminName || 'Admin',
                     assignedCard: event.assignedCard || null
                 });
+                showActionAnimation(
+                    'SOLD',
+                    `SOLD TO ${(event.teamName || 'TEAM').toUpperCase()}`
+                );
             }
             if (event.type === 'UNSOLD') {
                 markUnsold({ adminName: event.adminName || 'Admin' });
+                showActionAnimation(
+                    'UNSOLD',
+                    `UNSOLD: ${(event.playerName || 'PLAYER').toUpperCase()}`
+                );
             }
             if (event.type === 'NEXT_PLAYER') {
                 nextPlayer();
@@ -224,6 +252,14 @@ const Dashboard = () => {
                     isAdmin={false}
                     onClose={() => setSelectedTeam(null)}
                 />
+            )}
+
+            {actionOverlay && (
+                <div className={`dashboard-action-overlay ${actionOverlay.type === 'SOLD' ? 'sold' : 'unsold'}`}>
+                    <div className="dashboard-action-overlay-card">
+                        {actionOverlay.message}
+                    </div>
+                </div>
             )}
         </div>
     );

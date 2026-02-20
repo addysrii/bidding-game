@@ -1080,3 +1080,63 @@ body {
     flex-direction: row;
   }
 }
+.dashboard-action-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(4, 8, 24, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.dashboard-action-overlay-card {
+  min-width: min(92vw, 620px);
+  padding: 1.2rem 1.6rem;
+  border-radius: 16px;
+  text-align: center;
+  font-size: clamp(1.6rem, 4.4vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: overlayPop 0.35s ease-out, overlayGlow 1.2s ease-in-out infinite;
+}
+
+.dashboard-action-overlay.sold .dashboard-action-overlay-card {
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  background: linear-gradient(140deg, rgba(21, 128, 61, 0.25), rgba(6, 34, 20, 0.75));
+  box-shadow: 0 0 36px rgba(34, 197, 94, 0.35);
+}
+
+.dashboard-action-overlay.unsold .dashboard-action-overlay-card {
+  color: #fecaca;
+  border: 1px solid rgba(244, 63, 94, 0.6);
+  background: linear-gradient(140deg, rgba(159, 18, 57, 0.28), rgba(47, 7, 20, 0.8));
+  box-shadow: 0 0 36px rgba(244, 63, 94, 0.32);
+}
+
+@keyframes overlayPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(14px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes overlayGlow {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.18);
+  }
+}
