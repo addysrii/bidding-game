@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 
 const ADMIN_NAME = 'Admin-1';
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://ipl-auction-user.onrender.com';
 const DEFAULT_BREAK_SECONDS = 300;
 
 const getTeamCardOptions = (team) => {

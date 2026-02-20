@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
-import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://ipl-auction-user.onrender.com';
 
 const Dashboard = () => {
     const {
@@ -19,10 +18,7 @@ const Dashboard = () => {
         redoLastAction,
         syncAuctionState
     } = useAuction();
-    const [selectedTeam, setSelectedTeam] = useState(null);
     const [myTeamId] = useState("MUM"); // Hardcoded logged-in team
-    const [socketStatus, setSocketStatus] = useState('CONNECTING');
-    const [lastAdminEvent, setLastAdminEvent] = useState('Waiting for admin activity...');
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const socketRef = useRef(null);
@@ -31,10 +27,6 @@ const Dashboard = () => {
     const myTeam = teams.find(t => t.id === "MUM") || { funds: "100 Cr", players: 0, roster: [] };
     const highestBidTeam = teams.find((team) => team.id === highestBidder) || null;
 
-    // Calculate spent for My Team
-    const totalPurse = 100; // Cr
-    const currentFunds = parseFloat(myTeam.funds.replace(' Cr', ''));
-    const spent = (totalPurse - currentFunds).toFixed(1);
     const currentBidLakhs = Number(currentPlayer?.currentBid || 0);
     const currentBidCr = (currentBidLakhs / 100).toFixed(2);
 
@@ -65,7 +57,6 @@ const Dashboard = () => {
         socketRef.current = socket;
 
         socket.on('connect', () => {
-            setSocketStatus('CONNECTED');
             socket.emit('dashboard:auction-event', {
                 type: 'DASHBOARD_CONNECTED',
                 teamId: myTeamId,
@@ -73,8 +64,6 @@ const Dashboard = () => {
                 timestamp: new Date().toISOString()
             });
         });
-        socket.on('disconnect', () => setSocketStatus('DISCONNECTED'));
-        socket.on('connect_error', () => setSocketStatus('ERROR'));
 
         socket.on('auction:admin-event', (event = {}) => {
             if (!event?.type) return;
@@ -115,11 +104,6 @@ const Dashboard = () => {
             if (event.type === 'BREAK_END') {
                 setBreakEndsAt(null);
             }
-
-            const eventLabel = event.type.replaceAll('_', ' ');
-            setLastAdminEvent(
-                `${eventLabel} | ${event.playerName || 'Player'}${event.teamName ? ` | ${event.teamName}` : ''}`
-            );
         });
 
         return () => {
@@ -152,10 +136,6 @@ const Dashboard = () => {
                     <div className={`live-indicator ${breakSecondsLeft > 0 ? 'break' : ''}`}>
                         {breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'BIDDING OPEN'}
                     </div>
-                    <div className="socket-banner">
-                        <span className={`socket-pill socket-pill--${socketStatus.toLowerCase()}`}>{socketStatus}</span>
-                        <span className="socket-event">{lastAdminEvent}</span>
-                    </div>
                 </div>
             </header>
 
@@ -184,10 +164,8 @@ const Dashboard = () => {
                                 <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
                             </div>
                             <div className="stat-item">
-                                <span className="stat-label">Status</span>
-                                <span className={`stat-value ${currentPlayer?.isClosed ? 'status-closed' : 'status-open'}`}>
-                                    {(currentPlayer?.status || 'OPEN').toUpperCase()}
-                                </span>
+                                <span className="stat-label">Player Rating</span>
+                                <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
                             </div>
                         </div>
                     </div>
@@ -204,22 +182,11 @@ const Dashboard = () => {
                         <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
                         <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
                     </div>
-
-                    <div className="bid-box my-team-box">
-                        <span className="box-label">Mumbai Mavericks</span>
-                        <div className="my-funds">Remaining: ₹ {myTeam.funds}</div>
-                        <div className="my-funds-sub">Spent: ₹ {spent} Cr</div>
-                    </div>
                 </section>
             </div>
-
-            {selectedTeam && (
-                <SquadModal
-                    team={selectedTeam}
-                    isMyTeam={selectedTeam.id === myTeamId}
-                    onClose={() => setSelectedTeam(null)}
-                />
-            )}
+            <div className="projector-footer-hint">
+                Press 'S' for SOLD | Press 'U' for UNSOLD
+            </div>
         </div>
     );
 };

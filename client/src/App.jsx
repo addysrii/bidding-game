@@ -13,7 +13,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin129812" element={<AdminPanel />} />
         </Routes>
       </Router>
     </AuctionProvider>
