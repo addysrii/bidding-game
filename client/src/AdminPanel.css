@@ -1,36 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+    --admin-bg-0: #040612;
+    --admin-bg-1: #0a1024;
+    --admin-bg-2: #101b38;
+    --admin-panel: rgba(9, 15, 32, 0.78);
+    --admin-panel-border: rgba(84, 116, 210, 0.35);
+    --admin-text: #e2e8f0;
+    --admin-muted: #8ba2c9;
+    --admin-accent: #36c9ff;
+    --admin-accent-2: #17f6aa;
+    --admin-danger: #ff5d7d;
+    --admin-warning: #fbbf24;
+}
+
 .admin-container {
-    background: #ffffff;
-    color: #111111;
+    color: var(--admin-text);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     overflow: hidden;
+    background:
+        radial-gradient(circle at 10% 15%, rgba(54, 201, 255, 0.16), transparent 35%),
+        radial-gradient(circle at 88% 12%, rgba(23, 246, 170, 0.14), transparent 35%),
+        linear-gradient(135deg, var(--admin-bg-0), var(--admin-bg-1) 55%, var(--admin-bg-2));
 }
 
 .admin-header {
     flex-shrink: 0;
-    background: #ffffff;
-    border-bottom: 2px solid #111111;
-    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--admin-panel-border);
+    backdrop-filter: blur(8px);
+    background: linear-gradient(90deg, rgba(6, 12, 30, 0.86), rgba(6, 12, 30, 0.5));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .admin-header h1 {
-    color: #111111;
-    letter-spacing: 2px;
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.55rem;
+    letter-spacing: 2.2px;
+    color: #e8f3ff;
+    text-shadow: 0 0 16px rgba(54, 201, 255, 0.28);
 }
 
 .admin-header span {
-    color: #444444;
+    color: var(--admin-muted);
 }
 
 .under-construction-note {
     margin: 1rem 1.5rem 0;
-    border: 2px dashed #111111;
+    border: 1px dashed rgba(251, 191, 36, 0.65);
     padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    font-size: 0.84rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    background: #f2f2f2;
+    letter-spacing: 0.9px;
+    background: rgba(251, 191, 36, 0.08);
+    color: #fef3c7;
 }
 
 .admin-main-layout {
@@ -67,7 +96,7 @@
 
 .card-animation-container {
     width: 100%;
-    height: 420px;
+    min-height: 420px;
     display: flex;
     justify-content: center;
     align-items: stretch;
@@ -75,36 +104,49 @@
 
 .center-stage .player-card {
     width: 100%;
-    height: 375px;
+    min-height: 375px;
     margin: 0;
-    padding: 1.25rem;
-    background: #fafafa;
-    border: 2px solid #111111;
-    border-radius: 0;
-    box-shadow: none;
-    backdrop-filter: none;
+    padding: 1.35rem;
+    background: linear-gradient(165deg, rgba(14, 25, 53, 0.95), rgba(8, 14, 33, 0.95));
+    border: 1px solid rgba(90, 126, 227, 0.38);
+    border-radius: 16px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
 }
 
-.center-stage .live-badge,
-.center-stage .bid-amount,
+.center-stage .live-badge {
+    color: var(--admin-accent-2);
+    border-color: rgba(23, 246, 170, 0.8);
+    background: rgba(23, 246, 170, 0.1);
+}
+
+.center-stage .bid-amount {
+    color: #7df9cd !important;
+    text-shadow: 0 0 20px rgba(23, 246, 170, 0.35) !important;
+}
+
 .center-stage .player-country,
-.center-stage .player-image-placeholder,
 .center-stage .funds-remaining,
 .center-stage .player-count,
 .center-stage .team-name,
 .center-stage .team-code,
 .center-stage .stat-box .label {
-    color: #111111 !important;
-    border-color: #111111 !important;
-    text-shadow: none !important;
+    color: var(--admin-muted) !important;
+}
+
+.center-stage .stat-box .value,
+.center-stage .current-bid .label,
+.center-stage h2 {
+    color: #ecf5ff;
 }
 
 .center-stage .player-image-placeholder {
-    background: #e8e8e8;
+    background: linear-gradient(135deg, rgba(54, 201, 255, 0.28), rgba(23, 246, 170, 0.2));
+    color: #f8fbff;
 }
 
 .center-stage .auction-status {
-    border-top: 1px dashed #111111;
+    border-top: 1px solid rgba(84, 116, 210, 0.28);
 }
 
 .admin-controls-bar {
@@ -116,13 +158,15 @@
 }
 
 .active-bid-entry {
-    border: 2px solid #111111;
-    padding: 0.75rem;
+    border: 1px solid var(--admin-panel-border);
+    border-radius: 12px;
+    padding: 0.8rem;
     display: flex;
     gap: 0.75rem;
     align-items: center;
     justify-content: space-between;
-    background: #f8f8f8;
+    background: var(--admin-panel);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .active-bid-entry__meta {
@@ -132,37 +176,48 @@
     width: 100%;
     font-size: 0.8rem;
     text-transform: uppercase;
+    color: #deebff;
 }
 
 .bid-lock-state {
     justify-self: end;
     font-weight: 700;
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+    border: 1px solid transparent;
 }
 
 .bid-lock-state.open {
-    color: #166534;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.14);
+    border-color: rgba(52, 211, 153, 0.45);
 }
 
 .bid-lock-state.locked {
-    color: #7f1d1d;
+    color: #fb7185;
+    background: rgba(251, 113, 133, 0.14);
+    border-color: rgba(251, 113, 133, 0.45);
 }
 
 .control-btn {
-    height: 56px;
-    font-size: 1rem;
-    border-radius: 0;
-    border: 2px solid #111111;
-    box-shadow: none;
-    background: #ffffff;
-    color: #111111;
+    height: 52px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    border: 1px solid rgba(109, 144, 243, 0.45);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.22);
+    background: linear-gradient(135deg, rgba(17, 36, 82, 0.95), rgba(14, 30, 66, 0.95));
+    color: #eaf3ff;
     font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
 }
 
 .control-btn:hover,
 .control-btn:focus {
-    transform: none;
-    box-shadow: none;
-    background: #f4f4f4;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    filter: brightness(1.08);
 }
 
 .control-btn:disabled {
@@ -170,29 +225,144 @@
     cursor: not-allowed;
 }
 
+.control-btn.next-btn {
+    border-color: rgba(54, 201, 255, 0.58);
+    background: linear-gradient(135deg, rgba(18, 58, 103, 0.95), rgba(10, 39, 77, 0.95));
+}
+
+.control-btn.unsold-btn {
+    border-color: rgba(255, 93, 125, 0.5);
+    background: linear-gradient(135deg, rgba(93, 23, 41, 0.95), rgba(74, 14, 27, 0.95));
+}
+
+.control-btn.sold-btn {
+    border-color: rgba(23, 246, 170, 0.56);
+    background: linear-gradient(135deg, rgba(9, 84, 61, 0.95), rgba(11, 62, 48, 0.95));
+}
+
+.control-btn.break-btn {
+    border-color: rgba(251, 191, 36, 0.65);
+    background: linear-gradient(135deg, rgba(98, 55, 7, 0.95), rgba(75, 42, 5, 0.95));
+}
+
+.control-btn.break-btn.active {
+    border-color: rgba(255, 93, 125, 0.65);
+    background: linear-gradient(135deg, rgba(93, 23, 41, 0.95), rgba(74, 14, 27, 0.95));
+}
+
+.socket-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 116px;
+    height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(15, 26, 52, 0.65);
+    color: #d4e6ff;
+}
+
+.socket-status--connected {
+    border-color: rgba(23, 246, 170, 0.7);
+    color: #7df9cd;
+    background: rgba(23, 246, 170, 0.12);
+}
+
+.socket-status--connecting {
+    border-color: rgba(54, 201, 255, 0.7);
+    color: #8de4ff;
+    background: rgba(54, 201, 255, 0.14);
+}
+
+.socket-status--disconnected,
+.socket-status--error {
+    border-color: rgba(255, 93, 125, 0.74);
+    color: #ff95ab;
+    background: rgba(255, 93, 125, 0.12);
+}
+
+.socket-peer-event {
+    max-width: 320px;
+    border: 1px solid var(--admin-panel-border);
+    border-radius: 10px;
+    padding: 0 0.65rem;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    background: rgba(9, 15, 32, 0.72);
+    color: var(--admin-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .admin-log-card {
     min-width: 0;
-    height: 100%;
     min-height: 420px;
-    background: #ffffff;
-    border: 2px solid #111111;
-    border-radius: 0;
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-panel-border);
+    border-radius: 16px;
     padding: 1rem;
-    box-shadow: none;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
 }
 
 .admin-log-title {
-    margin: 0 0 0.75rem 0;
-    font-size: 1.05rem;
+    margin: 0;
+    font-size: 1.02rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #111111;
-    border-bottom: 1px dashed #111111;
-    padding-bottom: 0.5rem;
+    color: #ddecff;
+}
+
+.admin-log-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    border-bottom: 1px solid rgba(109, 144, 243, 0.28);
+    padding-bottom: 0.55rem;
+    margin-bottom: 0.75rem;
+}
+
+.admin-log-actions {
+    display: inline-flex;
+    gap: 0.45rem;
+}
+
+.admin-log-btn {
+    height: 32px;
+    min-width: 74px;
+    border-radius: 9px;
+    border: 1px solid rgba(109, 144, 243, 0.45);
+    background: rgba(11, 22, 48, 0.92);
+    color: #deebff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.admin-log-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+.admin-log-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .admin-log-list {
@@ -200,61 +370,62 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.55rem;
+    padding-right: 0.2rem;
 }
 
-.admin-log-filters {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
+.admin-log-list::-webkit-scrollbar {
+    width: 6px;
 }
 
-.admin-log-filters input,
-.admin-log-filters select {
-    height: 34px;
-    border: 1px solid #111111;
-    background: #ffffff;
-    padding: 0 0.5rem;
-    border-radius: 0;
-    color: #111111;
-    font-size: 0.78rem;
+.admin-log-list::-webkit-scrollbar-thumb {
+    background: rgba(99, 132, 230, 0.55);
+    border-radius: 999px;
 }
 
 .admin-log-empty {
-    color: #555555;
+    color: var(--admin-muted);
     font-size: 0.85rem;
     margin: 0;
     padding: 0.75rem 0;
 }
 
 .admin-log-entry {
-    font-size: 0.85rem;
-    padding: 0.5rem;
-    border: 1px dashed #111111;
+    font-size: 0.82rem;
+    padding: 0.65rem;
+    border: 1px solid rgba(84, 116, 210, 0.33);
+    border-radius: 12px;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.2rem 0.5rem;
+    gap: 0.25rem 0.55rem;
     align-items: center;
-    background: #f8f8f8;
+    background: linear-gradient(160deg, rgba(11, 20, 42, 0.92), rgba(8, 14, 30, 0.92));
 }
 
-.admin-log-entry--sold,
+.admin-log-entry--sold {
+    border-left: 3px solid rgba(23, 246, 170, 0.85);
+}
+
 .admin-log-entry--unsold {
-    border-left: 4px solid #111111;
+    border-left: 3px solid rgba(255, 93, 125, 0.85);
 }
 
 .admin-log-player,
 .admin-log-status,
 .admin-log-price,
 .admin-log-team {
-    color: #111111;
+    color: #deebff;
 }
 
 .admin-log-status {
     font-weight: 700;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.7px;
     text-transform: uppercase;
+}
+
+.admin-log-price {
+    color: #7df9cd;
 }
 
 .admin-log-team {
@@ -263,8 +434,8 @@
 }
 
 .admin-log-meta {
-    font-size: 0.7rem;
-    color: #3f3f46;
+    font-size: 0.69rem;
+    color: var(--admin-muted);
     grid-column: span 2;
 }
 
@@ -272,19 +443,22 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    background: #ffffff;
-    border: 2px solid #111111;
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-panel-border);
+    border-radius: 16px;
     padding: 1rem;
     box-sizing: border-box;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
 }
 
 .teams-section-full h2 {
-    color: #111111;
+    color: #ddecff;
     margin: 0 0 0.75rem;
-    border-bottom: 1px dashed #111111;
+    border-bottom: 1px solid rgba(109, 144, 243, 0.28);
     padding-bottom: 0.45rem;
     font-size: 1rem;
     text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
 
 .teams-with-purse {
@@ -298,13 +472,18 @@
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-    padding: 0.75rem;
-    background: #fafafa;
-    border: 1px solid #111111;
+    padding: 0.8rem;
+    background: linear-gradient(160deg, rgba(12, 21, 44, 0.92), rgba(8, 14, 30, 0.92));
+    border: 1px solid rgba(84, 116, 210, 0.35);
+    border-radius: 12px;
 }
 
 .team-card-wrapper {
-    transition: none;
+    transition: transform 0.2s ease;
+}
+
+.team-card-wrapper:hover {
+    transform: translateY(-2px);
 }
 
 .team-card-actions {
@@ -314,14 +493,22 @@
 }
 
 .team-action-btn {
-    height: 36px;
-    border: 1px solid #111111;
-    background: #ffffff;
-    color: #111111;
+    height: 38px;
+    border: 1px solid rgba(109, 144, 243, 0.45);
+    border-radius: 10px;
+    background: rgba(12, 25, 55, 0.9);
+    color: #deebff;
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.55px;
     cursor: pointer;
+    transition: transform 0.16s ease, filter 0.16s ease;
+}
+
+.team-action-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
 }
 
 .team-action-btn:disabled {
@@ -330,17 +517,18 @@
 }
 
 .team-action-btn--highest {
-    background: #f4f4f5;
+    border-color: rgba(54, 201, 255, 0.5);
 }
 
 .team-action-btn--sold {
-    background: #ecfdf3;
+    border-color: rgba(23, 246, 170, 0.5);
 }
 
 .team-purse-display {
     padding: 0.75rem;
-    background: #ffffff;
-    border: 1px dashed #111111;
+    background: rgba(4, 9, 24, 0.7);
+    border: 1px solid rgba(109, 144, 243, 0.35);
+    border-radius: 10px;
 }
 
 .team-name-label,
@@ -351,95 +539,107 @@
 .team-purse-container .purse-info,
 .team-purse-container .player-count,
 .team-purse-container .funds-remaining {
-    color: #111111 !important;
+    color: #deebff !important;
+}
+
+.team-purse-container .purse-info {
+    color: var(--admin-muted) !important;
 }
 
 .team-purse-container .purse-bar {
     width: 100%;
-    height: 6px;
-    background: #e5e5e5;
-    border-radius: 0;
+    height: 7px;
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
     overflow: hidden;
-    margin-top: 0.3rem;
+    margin-top: 0.35rem;
 }
 
 .team-purse-container .purse-fill {
     height: 100%;
-    border-radius: 0;
-    background: #111111 !important;
+    border-radius: 999px;
 }
 
 .admin-container .team-card {
-    border-radius: 0;
+    border-radius: 10px;
     box-shadow: none;
-    background: #ffffff;
-    border: 1px solid #111111;
+    background: rgba(8, 14, 32, 0.84);
+    border: 1px solid rgba(84, 116, 210, 0.38);
 }
 
 .admin-container .team-card:hover {
     transform: none !important;
-    border-color: #111111 !important;
+    border-color: rgba(122, 159, 255, 0.65) !important;
 }
 
 .admin-container .team-card .team-code,
 .admin-container .team-card .team-name,
 .admin-container .team-card .player-count,
 .admin-container .team-card .funds-remaining {
-    color: #111111 !important;
+    color: #deebff !important;
 }
 
 .notification-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(2, 6, 18, 0.6);
     z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
     pointer-events: none;
+    backdrop-filter: blur(2px);
 }
 
 .notification-content h1 {
-    font-size: 4rem;
+    font-size: clamp(2.2rem, 7vw, 4.6rem);
     font-weight: 800;
+    font-family: 'Orbitron', sans-serif;
     text-align: center;
     margin: 0;
     line-height: 1.1;
-    color: #111111 !important;
-    text-shadow: none !important;
+    color: #eaf4ff !important;
+    text-shadow: 0 0 30px rgba(54, 201, 255, 0.45) !important;
 }
 
 .sell-backdrop {
     z-index: 10000;
+    background: rgba(2, 6, 18, 0.68);
+    backdrop-filter: blur(5px);
 }
 
 .sell-modal {
     width: min(640px, 90vw);
-    background: #ffffff;
-    border: 2px solid #111111;
+    background: linear-gradient(160deg, rgba(12, 21, 44, 0.98), rgba(7, 13, 30, 0.98));
+    border: 1px solid rgba(84, 116, 210, 0.45);
+    border-radius: 16px;
     padding: 1rem;
+    color: #deebff;
 }
 
 .sell-modal h3 {
     margin: 0;
     text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
 
 .sell-modal p {
     margin: 0.5rem 0;
-    color: #111111;
+    color: var(--admin-muted);
 }
 
 .sell-wallet-line {
     font-size: 0.82rem;
     margin-bottom: 0.5rem;
+    color: #bdd4f8;
 }
 
 .sell-warning {
-    border: 1px solid #b91c1c;
-    background: #fee2e2;
-    color: #7f1d1d;
-    padding: 0.5rem;
+    border: 1px solid rgba(255, 93, 125, 0.6);
+    background: rgba(255, 93, 125, 0.12);
+    color: #ffacc0;
+    padding: 0.55rem;
+    border-radius: 10px;
     font-size: 0.8rem;
     margin-bottom: 0.5rem;
 }
@@ -452,9 +652,10 @@
 }
 
 .card-template-item {
-    border: 1px solid #111111;
-    background: #ffffff;
-    color: #111111;
+    border: 1px solid rgba(109, 144, 243, 0.45);
+    border-radius: 10px;
+    background: rgba(7, 13, 30, 0.84);
+    color: #deebff;
     height: 40px;
     cursor: pointer;
     font-size: 0.75rem;
@@ -462,12 +663,15 @@
 }
 
 .card-template-item.selected {
-    border-width: 2px;
+    border-width: 1px;
+    border-color: rgba(54, 201, 255, 0.85);
+    box-shadow: 0 0 0 1px rgba(54, 201, 255, 0.25);
     font-weight: 700;
 }
 
 .card-preview {
-    border: 1px dashed #111111;
+    border: 1px solid rgba(109, 144, 243, 0.35);
+    border-radius: 10px;
     padding: 0.5rem;
 }
 
@@ -478,6 +682,7 @@
     justify-content: center;
     gap: 0.2rem;
     padding: 0.75rem;
+    border-radius: 10px;
 }
 
 .card-preview-shell span {
@@ -495,7 +700,7 @@
 .sell-error {
     margin-top: 0.5rem;
     font-size: 0.78rem;
-    color: #991b1b;
+    color: #ff9fb5;
 }
 
 @media (max-width: 1100px) {
@@ -509,6 +714,12 @@
 }
 
 @media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
     .admin-main-layout {
         padding: 0.75rem;
     }
@@ -520,8 +731,8 @@
 
     .card-animation-container,
     .center-stage .player-card {
-        height: auto;
         min-height: 360px;
+        height: auto;
     }
 
     .admin-controls-bar {
@@ -537,8 +748,17 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .admin-log-filters {
-        grid-template-columns: 1fr;
+    .admin-log-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-log-actions {
+        width: 100%;
+    }
+
+    .admin-log-btn {
+        flex: 1;
     }
 
     .admin-log-entry {
@@ -553,7 +773,18 @@
         grid-template-columns: 1fr;
     }
 
-    .notification-content h1 {
-        font-size: 2rem;
+    .admin-header .header-right {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .socket-peer-event {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .control-btn {
+        width: 100%;
     }
 }
