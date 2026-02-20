@@ -13,19 +13,22 @@ const cloneState = (value) => {
 };
 
 // Helper to generate next player (mock)
-const getNextPlayer = (id) => ({
-    ...initialPlayer,
-    id: id + 1,
-    name: `Player ${id + 1}`,
-    role: ['Batsman', 'Bowler', 'All-Rounder', 'Wicket Keeper'][Math.floor(Math.random() * 4)],
-    basePrice: "20 L",
-    currentBid: "20 L",
-    highestBidder: null,
-    image: null,
-    isClosed: false,
-    status: 'OPEN',
-    assignedCard: null
-});
+const getNextPlayer = (id) => {
+    const roles = ['Batsman', 'Bowler', 'All-Rounder', 'Wicket Keeper'];
+    return {
+        ...initialPlayer,
+        id: id + 1,
+        name: `Player ${id + 1}`,
+        role: roles[(id + 1) % roles.length],
+        basePrice: "20 L",
+        currentBid: 20,
+        highestBidder: null,
+        image: null,
+        isClosed: false,
+        status: 'OPEN',
+        assignedCard: null
+    };
+};
 
 export const AuctionProvider = ({ children }) => {
     const [teams, setTeams] = useState(initialTeams.map((team) => ({
@@ -105,8 +108,11 @@ export const AuctionProvider = ({ children }) => {
         return true;
     };
 
-    const sellPlayer = ({ assignedCard, adminName = 'Admin' } = {}) => {
-        if (!highestBidder) {
+    const sellPlayer = ({ assignedCard, adminName = 'Admin', teamId: forcedTeamId = null, player: forcedPlayer = null, amount: forcedAmount = null } = {}) => {
+        const winningTeamId = forcedTeamId || highestBidder;
+        const bidAmount = forcedAmount !== null ? forcedAmount : (currentPlayer.currentBid || 0);
+
+        if (!winningTeamId) {
             return { success: false, reason: 'NO_BIDDER' };
         }
 
@@ -114,13 +120,13 @@ export const AuctionProvider = ({ children }) => {
             return { success: false, reason: 'PLAYER_CLOSED' };
         }
 
-        const winningTeam = getTeamById(highestBidder);
+        const winningTeam = getTeamById(winningTeamId);
         if (!winningTeam) {
             return { success: false, reason: 'INVALID_TEAM' };
         }
 
         const walletBefore = getFundsInCr(winningTeam.funds);
-        const costInCr = (currentPlayer.currentBid || 0) / 100;
+        const costInCr = bidAmount / 100;
 
         if (walletBefore < costInCr) {
             return {
@@ -133,10 +139,11 @@ export const AuctionProvider = ({ children }) => {
 
         const walletAfter = walletBefore - costInCr;
         const soldPlayer = {
-            ...currentPlayer,
-            soldPrice: `${currentPlayer.currentBid} L`,
-            role: currentPlayer.role || 'Batsman',
-            soldTo: highestBidder,
+            ...(forcedPlayer || currentPlayer),
+            currentBid: bidAmount,
+            soldPrice: `${bidAmount} L`,
+            role: (forcedPlayer || currentPlayer).role || 'Batsman',
+            soldTo: winningTeamId,
             status: 'SOLD',
             isClosed: true,
             assignedCard: assignedCard || null
@@ -144,7 +151,7 @@ export const AuctionProvider = ({ children }) => {
 
         runWithHistory(() => {
             setTeams(prevTeams => prevTeams.map(team => {
-                if (team.id === highestBidder) {
+                if (team.id === winningTeamId) {
                     return {
                         ...team,
                         funds: toFundsLabel(walletAfter),
@@ -161,7 +168,7 @@ export const AuctionProvider = ({ children }) => {
                 playerName: currentPlayer?.name || '—',
                 soldAmount: `${currentPlayer.currentBid} L`,
                 soldAmountInCr: costInCr,
-                teamId: highestBidder,
+                teamId: winningTeamId,
                 teamName: winningTeam.name,
                 walletBefore,
                 walletAfter,
@@ -221,15 +228,15 @@ export const AuctionProvider = ({ children }) => {
         return true;
     };
 
-    const nextPlayer = () => {
+    const nextPlayer = (overridePlayer = null) => {
+        let newPlayer;
         runWithHistory(() => {
-            setCurrentPlayer(prev => ({
-                ...getNextPlayer(prev.id),
-                currentBid: 20
-            }));
+            newPlayer = overridePlayer || getNextPlayer(currentPlayer.id);
+            setCurrentPlayer(newPlayer);
             setHighestBidder(null);
             setBidHistory([]);
         });
+        return newPlayer;
     };
 
     const undoLastAction = () => {

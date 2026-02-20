@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { resolveSocketUrl } from './socketUrl';
 import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SOCKET_URL = resolveSocketUrl();
 
@@ -26,6 +27,7 @@ const Dashboard = () => {
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const [showTeamsView, setShowTeamsView] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
+    const [notification, setNotification] = useState(null);
     const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
 
@@ -82,18 +84,43 @@ const Dashboard = () => {
 
             if (event.type === 'BID' && event.teamId && Number.isFinite(Number(event.bidAmount))) {
                 placeBid(event.teamId, Number(event.bidAmount));
+                if (event.player) syncAuctionState({ ...getAuctionSnapshot(), currentPlayer: event.player });
             }
             if (event.type === 'SOLD') {
+                const winningTeam = teams.find(t => t.id === (event.teamId || highestBidder));
+                setNotification({
+                    type: 'SOLD',
+                    message: `SOLD TO ${winningTeam?.name || event.teamId || 'TEAM'}`,
+                    playerName: event.player?.name || currentPlayer?.name || 'Player',
+                    color: winningTeam?.color || '#3b82f6',
+                    amount: event.soldAmount || currentPlayer?.currentBid || 0
+                });
+
+                setTimeout(() => setNotification(null), 2500); // 2.5 seconds for safe clearance
+
                 sellPlayer({
+                    teamId: event.teamId || highestBidder,
+                    amount: event.soldAmount,
                     adminName: event.adminName || 'Admin',
-                    assignedCard: event.assignedCard || null
+                    assignedCard: event.assignedCard || null,
+                    player: event.player || null
                 });
             }
             if (event.type === 'UNSOLD') {
+                setNotification({
+                    type: 'UNSOLD',
+                    message: 'UNSOLD',
+                    playerName: event.playerName || event.player?.name || currentPlayer?.name || 'Player',
+                    color: '#ef4444' // Red for unsold
+                });
+
+                setTimeout(() => setNotification(null), 2500);
+
                 markUnsold({ adminName: event.adminName || 'Admin' });
+                if (event.player) syncAuctionState({ ...getAuctionSnapshot(), currentPlayer: event.player });
             }
             if (event.type === 'NEXT_PLAYER') {
-                nextPlayer();
+                nextPlayer(event.player || null);
             }
             if (event.type === 'UNDO') {
                 if (event.stateSnapshot) {
@@ -225,6 +252,51 @@ const Dashboard = () => {
                     onClose={() => setSelectedTeam(null)}
                 />
             )}
+
+            <AnimatePresence>
+                {notification && (
+                    <motion.div
+                        className={`notification-overlay ${notification.type.toLowerCase()}-screen`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className="notification-content-v2"
+                            initial={{ scale: 0.8, opacity: 0, y: 50 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 1.1, opacity: 0, y: -20 }}
+                            transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                        >
+                            <div className="status-badge" style={{ backgroundColor: notification.color }}>
+                                {notification.type}
+                            </div>
+
+                            <h2 className="display-player-name">{notification.playerName.toUpperCase()}</h2>
+
+                            {notification.type === 'SOLD' ? (
+                                <>
+                                    <div className="sold-announcement">
+                                        <span className="sold-to-label">SOLD TO</span>
+                                        <h1 className="display-team-name" style={{ color: notification.color, textShadow: `0 0 30px ${notification.color}66` }}>
+                                            {notification.message.replace('SOLD TO ', '').toUpperCase()}
+                                        </h1>
+                                    </div>
+                                    <div className="display-price-box">
+                                        <span className="currency">₹</span>
+                                        <span className="amount">{(notification.amount / 100).toFixed(2)}</span>
+                                        <span className="cr">CR</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="unsold-announcement">
+                                    <h1 className="display-unsold-text">UNSOLD</h1>
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
