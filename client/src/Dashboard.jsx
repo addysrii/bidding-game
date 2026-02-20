@@ -3,6 +3,8 @@ import './Dashboard.css';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
 import { resolveSocketUrl } from './socketUrl';
+import TeamGrid from './components/TeamGrid';
+import SquadModal from './components/SquadModal';
 
 const SOCKET_URL = resolveSocketUrl();
 
@@ -23,7 +25,13 @@ const Dashboard = () => {
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const [showTeamsView, setShowTeamsView] = useState(false);
+    const [selectedTeam, setSelectedTeam] = useState(null);
+    const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
+
+    const scrollToTeams = () => {
+        teamsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
     // Derived state for My Team
     const myTeam = teams.find(t => t.id === "MUM") || { funds: "100 Cr", players: 0, roster: [] };
@@ -142,43 +150,53 @@ const Dashboard = () => {
                             className={`view-toggle-btn ${showTeamsView ? 'back-btn' : ''}`}
                             onClick={() => setShowTeamsView(!showTeamsView)}
                         >
-                            {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAMS')}
+                            {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAM SQUADS')}
                         </button>
                     </div>
                 </div>
             </header>
 
-            <div className="projector-main">
-                <section className="player-details-panel">
-                    <div className="player-image-frame">
-                        {currentPlayer?.image ? (
-                            <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
-                        ) : (
-                            <div className="player-image-placeholder-modern">👤</div>
-                        )}
-                    </div>
-                    <div className="player-text-info">
-                        <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
-                        <div className="stats-grid">
-                            <div className="stat-item">
-                                <span className="stat-label">Base Price</span>
-                                <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Country</span>
-                                <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Role</span>
-                                <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
-                            </div>
-                            <div className="stat-item">
-                                <span className="stat-label">Player Rating</span>
-                                <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
+            {showTeamsView ? (
+                <div className="teams-view-screen">
+                    <TeamGrid
+                        teams={teams}
+                        onTeamClick={setSelectedTeam}
+                        title="TEAM SQUADS OVERVIEW"
+                        hidePurse={true}
+                    />
+                </div>
+            ) : (
+                <div className="projector-main">
+                    <section className="player-details-panel">
+                        <div className="player-image-frame">
+                            {currentPlayer?.image ? (
+                                <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                            ) : (
+                                <div className="player-image-placeholder-modern">👤</div>
+                            )}
+                        </div>
+                        <div className="player-text-info">
+                            <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
+                            <div className="stats-grid">
+                                <div className="stat-item">
+                                    <span className="stat-label">Base Price</span>
+                                    <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Country</span>
+                                    <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Role</span>
+                                    <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Player Rating</span>
+                                    <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
                     <section className="bid-details-panel">
                         <div className="bid-box current-bid-box">
@@ -186,16 +204,27 @@ const Dashboard = () => {
                             <div className="bid-amount">₹ {currentBidCr} CR</div>
                         </div>
 
-                    <div className="bid-box team-box">
-                        <span className="box-label">Highest Bid</span>
-                        <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
-                        <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                        <div className="bid-box team-box">
+                            <span className="box-label">Highest Bid</span>
+                            <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
+                            <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                        </div>
+                    </section>
+
+                    <div className="projector-footer-hint">
+                        Press 'S' for SOLD | Press 'U' for UNSOLD
                     </div>
-                </section>
-            </div>
-            <div className="projector-footer-hint">
-                Press 'S' for SOLD | Press 'U' for UNSOLD
-            </div>
+                </div>
+            )}
+
+            {selectedTeam && (
+                <SquadModal
+                    team={selectedTeam}
+                    isMyTeam={false}
+                    isAdmin={false}
+                    onClose={() => setSelectedTeam(null)}
+                />
+            )}
         </div>
     );
 };

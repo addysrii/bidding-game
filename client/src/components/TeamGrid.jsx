@@ -16,7 +16,7 @@ const item = {
     show: { opacity: 1, scale: 1 }
 };
 
-const TeamGrid = ({ teams, onTeamClick, title = "OTHER TEAMS" }) => {
+const TeamGrid = ({ teams, onTeamClick, title = "OTHER TEAMS", hidePurse = false }) => {
     return (
         <div className="team-section">
             {title && <h3>{title}</h3>}
@@ -29,20 +29,35 @@ const TeamGrid = ({ teams, onTeamClick, title = "OTHER TEAMS" }) => {
                 {teams.map((team) => (
                     <motion.div
                         key={team.id}
-                        className="team-card"
+                        className="team-card squad-card"
                         variants={item}
-                        whileHover={{ scale: 1.05, borderColor: team.color }}
-                        style={{ borderLeft: `4px solid ${team.color}` }}
+                        whileHover={{ scale: 1.02, borderColor: team.color }}
+                        style={{ borderLeft: `6px solid ${team.color}` }}
                         onClick={() => onTeamClick(team)}
                     >
-                        <div>
-                            <div className="team-code" style={{ color: team.color }}>{team.code}</div>
-                            <div className="team-name">{team.name}</div>
+                        <div className="team-header">
+                            <div className="team-info-left">
+                                <div className="team-code" style={{ color: team.color }}>{team.code}</div>
+                                <div className="team-name">{team.name}</div>
+                            </div>
+                            <div className="team-stats-right">
+                                {!hidePurse && <div className="funds-remaining">{team.funds}</div>}
+                                <div className="player-count-badge">{team.players} Players</div>
+                            </div>
                         </div>
 
-                        <div className="team-footer">
-                            <span className="player-count">{team.players} 🏏</span>
-                            <span className="funds-remaining">{team.funds}</span>
+                        <div className="squad-list-mini">
+                            {team.roster && team.roster.length > 0 ? (
+                                <div className="roster-pills">
+                                    {team.roster.map((player, idx) => (
+                                        <span key={idx} className="player-pill">
+                                            {player.name.split(' ').pop()}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-squad-text">No players yet</div>
+                            )}
                         </div>
                     </motion.div>
                 ))}
