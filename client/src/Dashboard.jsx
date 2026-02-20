@@ -3,6 +3,8 @@ import './Dashboard.css';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
 import { resolveSocketUrl } from './socketUrl';
+import TeamGrid from './components/TeamGrid';
+import SquadModal from './components/SquadModal';
 
 const SOCKET_URL = resolveSocketUrl();
 
@@ -23,6 +25,7 @@ const Dashboard = () => {
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const [showTeamsView, setShowTeamsView] = useState(false);
+    const [selectedTeam, setSelectedTeam] = useState(null);
     const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
 
@@ -188,64 +191,42 @@ const Dashboard = () => {
                                     <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
                                 </div>
                                 <div className="stat-item">
-                                    <span className="stat-label">Status</span>
-                                    <span className={`stat-value ${currentPlayer?.isClosed ? 'status-closed' : 'status-open'}`}>
-                                        {(currentPlayer?.status || 'OPEN').toUpperCase()}
-                                    </span>
+                                    <span className="stat-label">Player Rating</span>
+                                    <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
                                 </div>
                             </div>
                         </div>
                     </section>
-                    <div className="projector-main">
-                        <section className="player-details-panel">
-                            <div className="player-image-frame">
-                                {currentPlayer?.image ? (
-                                    <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
-                                ) : (
-                                    <div className="player-image-placeholder-modern">👤</div>
-                                )}
-                            </div>
-                            <div className="player-text-info">
-                                <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
-                                <div className="stats-grid">
-                                    <div className="stat-item">
-                                        <span className="stat-label">Base Price</span>
-                                        <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Country</span>
-                                        <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Role</span>
-                                        <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
-                                    </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Player Rating</span>
-                                        <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
 
-                        <section className="bid-details-panel">
-                            <div className="bid-box current-bid-box">
-                                <span className="box-label">Current Bid</span>
-                                <div className="bid-amount">₹ {currentBidCr} CR</div>
-                            </div>
+                    <section className="bid-details-panel">
+                        <div className="bid-box current-bid-box">
+                            <span className="box-label">Current Bid</span>
+                            <div className="bid-amount">₹ {currentBidCr} CR</div>
+                        </div>
 
-                            <div className="bid-box team-box">
-                                <span className="box-label">Highest Bid</span>
-                                <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
-                                <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
-                            </div>
-                        </section>
-                    </div>
+                        <div className="bid-box team-box">
+                            <span className="box-label">Highest Bid</span>
+                            <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
+                            <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                        </div>
+                    </section>
+
                     <div className="projector-footer-hint">
                         Press 'S' for SOLD | Press 'U' for UNSOLD
                     </div>
                 </div>
-            );
+            )}
+
+            {selectedTeam && (
+                <SquadModal
+                    team={selectedTeam}
+                    isMyTeam={false}
+                    isAdmin={false}
+                    onClose={() => setSelectedTeam(null)}
+                />
+            )}
+        </div>
+    );
 };
 
-            export default Dashboard;
+export default Dashboard;
