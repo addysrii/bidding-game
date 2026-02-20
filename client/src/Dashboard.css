@@ -54,6 +54,56 @@ body {
   font-size: 0.9rem;
 }
 
+.socket-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  max-width: 320px;
+}
+
+.socket-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  height: 28px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.socket-pill--connected {
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.6);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.socket-pill--connecting {
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(96, 165, 250, 0.12);
+}
+
+.socket-pill--disconnected,
+.socket-pill--error {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.6);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.socket-event {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .purse-meter-container {
   display: flex;
   flex-direction: column;
@@ -92,6 +142,32 @@ body {
   justify-content: center;
   margin-bottom: 3rem;
   padding: 0 1rem;
+}
+
+.break-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.3rem 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(71, 49, 4, 0.45), rgba(43, 28, 3, 0.65));
+}
+
+.break-banner-label {
+  color: #fef08a;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 0.85rem;
+}
+
+.break-banner-time {
+  color: #fde68a;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
 }
 
 .player-card {
@@ -502,6 +578,19 @@ body {
   .header-right {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .socket-banner {
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .socket-event {
+    text-align: left;
+    width: 100%;
   }
 
   .purse-meter-container {
@@ -510,6 +599,11 @@ body {
 
   .player-card {
     padding: 1.5rem;
+  }
+
+  .break-banner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .player-details {
@@ -548,6 +642,275 @@ body {
   }
 
   .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Projector UI theme (scoped to Dashboard only) */
+.projector-dashboard {
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  background:
+    radial-gradient(circle at top right, #1a1a3a 0%, #0b0b18 60%),
+    radial-gradient(circle at bottom left, #151334 0%, #070712 100%);
+  padding: 1rem 1.5rem;
+}
+
+.projector-dashboard .dashboard-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.projector-dashboard .header-right {
+  align-items: center;
+}
+
+.projector-dashboard .logo-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+.projector-dashboard .logo-text span {
+  color: #3b82f6;
+}
+
+.projector-dashboard .live-indicator {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.projector-dashboard .live-indicator.break {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.38);
+}
+
+.projector-dashboard .socket-banner {
+  align-items: flex-start;
+}
+
+.projector-dashboard .socket-event {
+  max-width: 260px;
+  text-align: left;
+}
+
+.projector-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  min-height: 62vh;
+}
+
+.player-details-panel {
+  background: #14142b;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-image-frame {
+  width: 100%;
+  min-height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: linear-gradient(180deg, rgba(79, 70, 229, 0.22), transparent 55%);
+}
+
+.player-image-frame img {
+  width: auto;
+  max-width: 400px;
+  height: 100%;
+  object-fit: contain;
+  object-position: top;
+}
+
+.player-image-placeholder-modern {
+  width: 180px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  border-radius: 18px;
+  margin-top: 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.projector-dashboard .player-text-info {
+  padding: 1.6rem;
+  margin-top: 0;
+  text-align: center;
+}
+
+.projector-dashboard .player-text-info h1 {
+  font-size: clamp(1.8rem, 2.7vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 1rem;
+}
+
+.projector-dashboard .stats-grid {
+  gap: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1rem;
+}
+
+.projector-dashboard .stat-item {
+  gap: 0.25rem;
+}
+
+.projector-dashboard .stat-label {
+  font-size: 0.74rem;
+  letter-spacing: 0.7px;
+}
+
+.projector-dashboard .stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.projector-dashboard .status-open {
+  color: #22c55e;
+}
+
+.projector-dashboard .status-closed {
+  color: #f59e0b;
+}
+
+.bid-details-panel {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.bid-box {
+  background: #14142b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.box-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.projector-dashboard .bid-amount {
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.projector-dashboard .team-name {
+  margin-top: 0.5rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.team-logo-small {
+  margin: 0.7rem auto 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #1d1d40;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #3b82f6;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.my-funds {
+  margin-top: 0.6rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.my-funds-sub {
+  font-size: 0.92rem;
+  color: #94a3b8;
+}
+
+.projector-dashboard .my-squad-btn {
+  margin-top: 1rem;
+  margin-bottom: 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: linear-gradient(120deg, #1e40af, #1d4ed8);
+}
+
+.projector-dashboard .team-section h3 {
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.projector-dashboard .team-card {
+  background: rgba(20, 20, 43, 0.9);
+  border-radius: 12px;
+}
+
+@media (max-width: 1050px) {
+  .projector-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .projector-dashboard {
+    padding: 0.8rem;
+  }
+
+  .projector-dashboard .dashboard-header {
+    gap: 0.7rem;
+  }
+
+  .projector-dashboard .header-right {
+    width: 100%;
+    gap: 0.6rem;
+  }
+
+  .projector-dashboard .live-indicator {
+    order: 1;
+  }
+
+  .projector-dashboard .socket-banner {
+    order: 2;
+    width: 100%;
+  }
+
+  .projector-dashboard .socket-event {
+    max-width: 100%;
+  }
+
+  .projector-dashboard .stats-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import './Dashboard.css'; // Reuse basic dashboard layout styles
 import './AdminPanel.css';
 import PlayerCard from './components/PlayerCard';
@@ -6,8 +6,11 @@ import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { io } from 'socket.io-client';
 
 const ADMIN_NAME = 'Admin-1';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const DEFAULT_BREAK_SECONDS = 300;
 
 const getTeamCardOptions = (team) => {
     if (!team) return [];
@@ -42,16 +45,31 @@ const getTeamCardOptions = (team) => {
     ];
 };
 
-const AdminPanel = () => {
-    const { teams, currentPlayer, highestBidder, auctionLogs, placeBid, sellPlayer, markUnsold, nextPlayer } = useAuction();
+    const AdminPanel = () => {
+    const {
+        teams,
+        currentPlayer,
+        highestBidder,
+        auctionLogs,
+        placeBid,
+        sellPlayer,
+        markUnsold,
+        nextPlayer,
+        undoLastAction,
+        redoLastAction,
+        canUndo,
+        canRedo
+    } = useAuction();
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [notification, setNotification] = useState(null);
     const [showSellModal, setShowSellModal] = useState(false);
     const [selectedCardId, setSelectedCardId] = useState(null);
     const [sellError, setSellError] = useState('');
-    const [teamFilter, setTeamFilter] = useState('ALL');
-    const [dateFilter, setDateFilter] = useState('');
-    const [playerFilter, setPlayerFilter] = useState('');
+    const [socketStatus, setSocketStatus] = useState('CONNECTING');
+    const [lastDashboardEvent, setLastDashboardEvent] = useState('No dashboard events yet');
+    const [breakEndsAt, setBreakEndsAt] = useState(null);
+    const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
+    const socketRef = useRef(null);
 
     const winningTeam = teams.find((team) => team.id === highestBidder) || null;
     const teamCardOptions = useMemo(() => getTeamCardOptions(winningTeam), [winningTeam]);
@@ -65,17 +83,7 @@ const AdminPanel = () => {
     const hasInsufficientWallet = winningTeam ? walletBefore < bidInCr : false;
     const isPlayerLocked = currentPlayer?.isClosed;
     const isSold = currentPlayer?.status === 'SOLD';
-
-    const filteredLogs = useMemo(() => {
-        return auctionLogs.filter((entry) => {
-            const teamMatch = teamFilter === 'ALL' || entry.teamId === teamFilter;
-            const playerMatch = !playerFilter
-                || entry.playerName.toLowerCase().includes(playerFilter.toLowerCase());
-            const entryDate = entry.timestamp ? new Date(entry.timestamp).toISOString().slice(0, 10) : '';
-            const dateMatch = !dateFilter || entryDate === dateFilter;
-            return teamMatch && playerMatch && dateMatch;
-        });
-    }, [auctionLogs, teamFilter, playerFilter, dateFilter]);
+    const isBreakActive = breakSecondsLeft > 0;
 
     useEffect(() => {
         document.documentElement.classList.add('admin-page');
@@ -86,10 +94,69 @@ const AdminPanel = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const socket = io(SOCKET_URL, {
+            transports: ['websocket', 'polling']
+        });
+
+        socketRef.current = socket;
+
+        socket.on('connect', () => setSocketStatus('CONNECTED'));
+        socket.on('disconnect', () => setSocketStatus('DISCONNECTED'));
+        socket.on('connect_error', () => setSocketStatus('ERROR'));
+        socket.on('auction:dashboard-event', (event = {}) => {
+            if (!event?.type) return;
+            const eventLabel = event.type.replaceAll('_', ' ');
+            setLastDashboardEvent(
+                `${eventLabel} | ${event.teamName || event.teamId || 'Dashboard'}`
+            );
+        });
+
+        return () => {
+            socket.disconnect();
+            socketRef.current = null;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!breakEndsAt) {
+            setBreakSecondsLeft(0);
+            return;
+        }
+
+        const updateCountdown = () => {
+            const remaining = Math.max(0, Math.ceil((breakEndsAt - Date.now()) / 1000));
+            setBreakSecondsLeft(remaining);
+            if (remaining <= 0) {
+                setBreakEndsAt(null);
+            }
+        };
+
+        updateCountdown();
+        const timerId = setInterval(updateCountdown, 1000);
+        return () => clearInterval(timerId);
+    }, [breakEndsAt]);
+
     const getBidIncrement = (bid) => {
         if (bid >= 1000) return 100;
         if (bid >= 200) return 50;
         return 20;
+    };
+
+    const emitAdminEvent = (type, extra = {}) => {
+        const socket = socketRef.current;
+        if (!socket || !socket.connected) return;
+
+        socket.emit('admin:auction-event', {
+            type,
+            adminName: ADMIN_NAME,
+            playerId: currentPlayer?.id || null,
+            playerName: currentPlayer?.name || null,
+            currentBid: currentPlayer?.currentBid || 0,
+            highestBidder,
+            ...extra,
+            timestamp: new Date().toISOString()
+        });
     };
 
     const handleHighestBid = (teamId) => {
@@ -100,12 +167,11 @@ const AdminPanel = () => {
         if (!ok) return;
 
         const bidTeam = teams.find((team) => team.id === teamId);
-        setNotification({
-            type: 'BID',
-            message: `HIGHEST BID: ${bidTeam?.name?.toUpperCase() || teamId}`,
-            color: bidTeam?.color || '#111111'
+        emitAdminEvent('BID', {
+            teamId,
+            teamName: bidTeam?.name || teamId,
+            bidAmount: nextBidValue
         });
-        setTimeout(() => setNotification(null), 1200);
     };
 
     const openSellModal = (teamId = highestBidder) => {
@@ -139,23 +205,55 @@ const AdminPanel = () => {
         }
 
         setShowSellModal(false);
-        setNotification({
-            type: 'SOLD',
-            message: `SOLD TO ${winningTeam ? winningTeam.name.toUpperCase() : highestBidder}`,
-            color: winningTeam?.color || '#22c55e'
+        emitAdminEvent('SOLD', {
+            teamId: winningTeam?.id || highestBidder,
+            teamName: winningTeam?.name || null,
+            soldAmount: currentPlayer?.currentBid || 0,
+            assignedCard: selectedCard || null
         });
-        setTimeout(() => setNotification(null), 2000);
     };
 
     const handleUnsold = () => {
         if (isPlayerLocked) return;
         markUnsold({ adminName: ADMIN_NAME });
-        setNotification({
-            type: 'UNSOLD',
-            message: `UNSOLD: ${currentPlayer?.name || 'PLAYER'}`,
-            color: '#111111'
+        emitAdminEvent('UNSOLD');
+    };
+
+    const handleNextPlayer = () => {
+        nextPlayer();
+        emitAdminEvent('NEXT_PLAYER');
+    };
+
+    const handleUndo = () => {
+        const snapshot = undoLastAction();
+        if (!snapshot) return;
+        emitAdminEvent('UNDO', { stateSnapshot: snapshot });
+    };
+
+    const handleRedo = () => {
+        const snapshot = redoLastAction();
+        if (!snapshot) return;
+        emitAdminEvent('REDO', { stateSnapshot: snapshot });
+    };
+
+    const formatTimer = (totalSeconds) => {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
+    const handleStartBreak = () => {
+        const nextBreakEndsAt = Date.now() + (DEFAULT_BREAK_SECONDS * 1000);
+        setBreakEndsAt(nextBreakEndsAt);
+        emitAdminEvent('BREAK_START', {
+            durationSeconds: DEFAULT_BREAK_SECONDS,
+            breakEndsAt: nextBreakEndsAt
         });
-        setTimeout(() => setNotification(null), 1500);
+    };
+
+    const handleEndBreak = () => {
+        setBreakEndsAt(null);
+        emitAdminEvent('BREAK_END');
     };
 
     return (
@@ -166,7 +264,17 @@ const AdminPanel = () => {
                     <span>Tournament Control Center</span>
                 </div>
                 <div className="header-right">
-                    <button className="control-btn next-btn" onClick={nextPlayer}>
+                    <span className={`socket-status socket-status--${socketStatus.toLowerCase()}`}>
+                        {socketStatus}
+                    </span>
+                    <span className="socket-peer-event">{lastDashboardEvent}</span>
+                    <button
+                        className={`control-btn break-btn ${isBreakActive ? 'active' : ''}`}
+                        onClick={isBreakActive ? handleEndBreak : handleStartBreak}
+                    >
+                        {isBreakActive ? `END BREAK ${formatTimer(breakSecondsLeft)}` : 'START BREAK'}
+                    </button>
+                    <button className="control-btn next-btn" onClick={handleNextPlayer}>
                         NEXT PLAYER
                     </button>
                 </div>
@@ -219,31 +327,32 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="admin-log-card">
-                        <h3 className="admin-log-title">Auction Log</h3>
-                        <div className="admin-log-filters">
-                            <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
-                                <option value="ALL">All Teams</option>
-                                {teams.map((team) => (
-                                    <option key={team.id} value={team.id}>{team.name}</option>
-                                ))}
-                            </select>
-                            <input
-                                type="date"
-                                value={dateFilter}
-                                onChange={(e) => setDateFilter(e.target.value)}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Filter player"
-                                value={playerFilter}
-                                onChange={(e) => setPlayerFilter(e.target.value)}
-                            />
+                        <div className="admin-log-head">
+                            <h3 className="admin-log-title">Auction Log</h3>
+                            <div className="admin-log-actions">
+                                <button
+                                    type="button"
+                                    className="admin-log-btn"
+                                    onClick={handleUndo}
+                                    disabled={!canUndo}
+                                >
+                                    UNDO
+                                </button>
+                                <button
+                                    type="button"
+                                    className="admin-log-btn"
+                                    onClick={handleRedo}
+                                    disabled={!canRedo}
+                                >
+                                    REDO
+                                </button>
+                            </div>
                         </div>
                         <div className="admin-log-list">
-                            {filteredLogs.length === 0 ? (
+                            {auctionLogs.length === 0 ? (
                                 <p className="admin-log-empty">No activity yet.</p>
                             ) : (
-                                filteredLogs.map(entry => (
+                                auctionLogs.map(entry => (
                                     <div key={entry.id} className={`admin-log-entry admin-log-entry--${entry.type.toLowerCase()}`}>
                                         <span className="admin-log-player">{entry.playerName}</span>
                                         <span className="admin-log-status">{entry.type}</span>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPL Auction Projector Screen</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="projector-screen">
+        <div class="header">
+            <div class="logo">BIDDNG <span>BATTLE</span></div>
+            <div class="live-indicator">BIDDING OPEN</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Player Details Panel -->
+            <div class="player-details-panel">
+                <div class="player-info-container">
+                    <div class="player-image-frame">
+                        <img id="player-img" src="virat.jpg" alt="Player">
+                    </div>
+                    <div class="player-text-info">
+                        <h1 id="player-name">VIRAT KOHLI</h1>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">BASE PRICE</span>
+                                <span class="stat-value">₹ 2.00 CR</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">COUNTRY</span>
+                                <span class="stat-value">INDIA</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">ROLE</span>
+                                <span class="stat-value">BATTER</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">PLAYER RATING</span>
+                                <span class="stat-value" id="player-rating">9.5/10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bid Details Panel -->
+            <div class="bid-details-panel">
+
+                <div class="bid-box current-bid-box">
+                    <span class="box-label">CURRENT BID</span>
+                    <div class="bid-amount" id="current-bid">₹ 14.50 CR</div>
+                </div>
+
+                <div class="bid-box team-box">
+                    <span class="box-label">HIGHEST BID</span>
+                    <div class="team-name" id="current-team">ROYAL CHALLENGERS BANGALORE</div>
+                    <div class="team-logo-small" id="team-logo">RCB</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="control-hints">
+                Press 'S' for SOLD | Press 'U' for UNSOLD
+            </div>
+        </div>
+
+        <!-- Pop-ups -->
+        <div id="status-overlay" class="overlay hidden">
+            <div class="status-card">
+                <div id="status-text">SOLD</div>
+                <div id="sold-to-info" class="hidden">
+                    <span class="sold-label">TO</span>
+                    <div id="final-team">RCB</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
