@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
-import PlayerCard from './components/PlayerCard';
 import TeamGrid from './components/TeamGrid';
-import PurseMeter from './components/PurseMeter';
 import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
@@ -32,11 +30,14 @@ const Dashboard = () => {
 
     // Derived state for My Team
     const myTeam = teams.find(t => t.id === "MUM") || { funds: "100 Cr", players: 0, roster: [] };
+    const highestBidTeam = teams.find((team) => team.id === highestBidder) || null;
 
     // Calculate spent for My Team
     const totalPurse = 100; // Cr
     const currentFunds = parseFloat(myTeam.funds.replace(' Cr', ''));
     const spent = (totalPurse - currentFunds).toFixed(1);
+    const currentBidLakhs = Number(currentPlayer?.currentBid || 0);
+    const currentBidCr = (currentBidLakhs / 100).toFixed(2);
 
     useEffect(() => {
         if (!breakEndsAt) {
@@ -128,80 +129,89 @@ const Dashboard = () => {
         };
     }, []);
 
-    const emitDashboardEvent = (type, extra = {}) => {
-        const socket = socketRef.current;
-        if (!socket || !socket.connected) return;
-
-        socket.emit('dashboard:auction-event', {
-            type,
-            teamId: myTeamId,
-            teamName: myTeam?.name || myTeamId,
-            playerId: currentPlayer?.id || null,
-            playerName: currentPlayer?.name || null,
-            timestamp: new Date().toISOString(),
-            ...extra
-        });
-    };
-
-    const handleBid = () => {
-        // Logic to increment bid. State is managed in context.
-        // Assuming fixed increment for now, or dynamic based on current price
-        let increment = 20;
-        if (currentPlayer.currentBid >= 200) increment = 50;
-        if (currentPlayer.currentBid >= 1000) increment = 100;
-
-        const nextBid = currentPlayer.currentBid + increment;
-        const ok = placeBid(myTeamId, nextBid);
-        if (!ok) return;
-
-        emitDashboardEvent('BID', { bidAmount: nextBid });
-    };
-
-    const handleSkip = () => {
-        emitDashboardEvent('SKIP');
-    };
-
     const formatTimer = (totalSeconds) => {
         const mins = Math.floor(totalSeconds / 60);
         const secs = totalSeconds % 60;
         return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     };
 
+    const formatBasePrice = (basePrice) => {
+        if (!basePrice) return '₹ 0.00 CR';
+        const match = String(basePrice).match(/([0-9.]+)/);
+        const valueLakhs = match ? Number(match[1]) : 0;
+        return `₹ ${(valueLakhs / 100).toFixed(2)} CR`;
+    };
+
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-container projector-dashboard">
             <header className="dashboard-header">
                 <div className="header-left">
-                    <h1>MUM</h1>
-                    <span>Mumbai Mavericks - Team Owner Dashboard</span>
+                    <div className="logo-text">BIDDING <span>BATTLE</span></div>
                 </div>
 
                 <div className="header-right">
+                    <div className={`live-indicator ${breakSecondsLeft > 0 ? 'break' : ''}`}>
+                        {breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'BIDDING OPEN'}
+                    </div>
                     <div className="socket-banner">
                         <span className={`socket-pill socket-pill--${socketStatus.toLowerCase()}`}>{socketStatus}</span>
                         <span className="socket-event">{lastAdminEvent}</span>
                     </div>
-                    <PurseMeter total="100 Cr" spent={`${spent} Cr`} remaining={myTeam.funds} />
                 </div>
             </header>
 
-            {breakSecondsLeft > 0 && (
-                <div className="break-banner">
-                    <span className="break-banner-label">Break In Progress</span>
-                    <strong className="break-banner-time">{formatTimer(breakSecondsLeft)}</strong>
-                </div>
-            )}
+            <div className="projector-main">
+                <section className="player-details-panel">
+                    <div className="player-image-frame">
+                        {currentPlayer?.image ? (
+                            <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                        ) : (
+                            <div className="player-image-placeholder-modern">👤</div>
+                        )}
+                    </div>
+                    <div className="player-text-info">
+                        <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
+                        <div className="stats-grid">
+                            <div className="stat-item">
+                                <span className="stat-label">Base Price</span>
+                                <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                            </div>
+                            <div className="stat-item">
+                                <span className="stat-label">Country</span>
+                                <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
+                            </div>
+                            <div className="stat-item">
+                                <span className="stat-label">Role</span>
+                                <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
+                            </div>
+                            <div className="stat-item">
+                                <span className="stat-label">Status</span>
+                                <span className={`stat-value ${currentPlayer?.isClosed ? 'status-closed' : 'status-open'}`}>
+                                    {(currentPlayer?.status || 'OPEN').toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            <div className="player-card-container">
-                <PlayerCard
-                    player={currentPlayer}
-                    currentBid={currentPlayer.currentBid}
-                    highestBidder={highestBidder}
-                    onBid={handleBid}
-                    onSkip={handleSkip}
-                    // onSold moved to Admin Panel
-                    isMyTeamBid={highestBidder === myTeamId}
-                    cardTheme={currentPlayer?.status === 'SOLD' ? currentPlayer?.assignedCard?.style : null}
-                />
+                <section className="bid-details-panel">
+                    <div className="bid-box current-bid-box">
+                        <span className="box-label">Current Bid</span>
+                        <div className="bid-amount">₹ {currentBidCr} CR</div>
+                    </div>
+
+                    <div className="bid-box team-box">
+                        <span className="box-label">Highest Bid</span>
+                        <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
+                        <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                    </div>
+
+                    <div className="bid-box my-team-box">
+                        <span className="box-label">Mumbai Mavericks</span>
+                        <div className="my-funds">Remaining: ₹ {myTeam.funds}</div>
+                        <div className="my-funds-sub">Spent: ₹ {spent} Cr</div>
+                    </div>
+                </section>
             </div>
 
             <button className="my-squad-btn" onClick={() => setSelectedTeam(myTeam)}>
