@@ -7,9 +7,10 @@ import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
+import { resolveSocketUrl } from './socketUrl';
 
 const ADMIN_NAME = 'Admin-1';
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://ipl-auction-user.onrender.com';
+const SOCKET_URL = resolveSocketUrl();
 const DEFAULT_BREAK_SECONDS = 300;
 
 const getTeamCardOptions = (team) => {

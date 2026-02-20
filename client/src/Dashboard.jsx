@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
+import { resolveSocketUrl } from './socketUrl';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://ipl-auction-user.onrender.com';
+const SOCKET_URL = resolveSocketUrl();
 
 const Dashboard = () => {
     const {
