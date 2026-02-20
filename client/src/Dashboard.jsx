@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
-import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
@@ -212,17 +211,6 @@ const Dashboard = () => {
                         <div className="my-funds-sub">Spent: ₹ {spent} Cr</div>
                     </div>
                 </section>
-            </div>
-
-            <button className="my-squad-btn" onClick={() => setSelectedTeam(myTeam)}>
-                MY SQUAD ({myTeam.players})
-            </button>
-
-            <div className="team-section">
-                <TeamGrid
-                    teams={teams.filter(t => t.id !== myTeamId)}
-                    onTeamClick={(team) => setSelectedTeam(team)}
-                />
             </div>
 
             {selectedTeam && (
