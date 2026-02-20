@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
-import SquadModal from './components/SquadModal';
-import TeamGrid from './components/TeamGrid';
 import { useAuction } from './context/AuctionContext';
 import { io } from 'socket.io-client';
+import { resolveSocketUrl } from './socketUrl';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = resolveSocketUrl();
 
 const Dashboard = () => {
     const {
@@ -20,10 +19,7 @@ const Dashboard = () => {
         redoLastAction,
         syncAuctionState
     } = useAuction();
-    const [selectedTeam, setSelectedTeam] = useState(null);
     const [myTeamId] = useState("MUM"); // Hardcoded logged-in team
-    const [socketStatus, setSocketStatus] = useState('CONNECTING');
-    const [lastAdminEvent, setLastAdminEvent] = useState('Waiting for admin activity...');
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const [showTeamsView, setShowTeamsView] = useState(false);
@@ -38,10 +34,6 @@ const Dashboard = () => {
     const myTeam = teams.find(t => t.id === "MUM") || { funds: "100 Cr", players: 0, roster: [] };
     const highestBidTeam = teams.find((team) => team.id === highestBidder) || null;
 
-    // Calculate spent for My Team
-    const totalPurse = 100; // Cr
-    const currentFunds = parseFloat(myTeam.funds.replace(' Cr', ''));
-    const spent = (totalPurse - currentFunds).toFixed(1);
     const currentBidLakhs = Number(currentPlayer?.currentBid || 0);
     const currentBidCr = (currentBidLakhs / 100).toFixed(2);
 
@@ -65,14 +57,15 @@ const Dashboard = () => {
     }, [breakEndsAt]);
 
     useEffect(() => {
+        const isProd = import.meta.env.PROD;
         const socket = io(SOCKET_URL, {
-            transports: ['websocket', 'polling']
+            transports: isProd ? ['polling'] : ['polling', 'websocket'],
+            upgrade: !isProd
         });
 
         socketRef.current = socket;
 
         socket.on('connect', () => {
-            setSocketStatus('CONNECTED');
             socket.emit('dashboard:auction-event', {
                 type: 'DASHBOARD_CONNECTED',
                 teamId: myTeamId,
@@ -80,8 +73,6 @@ const Dashboard = () => {
                 timestamp: new Date().toISOString()
             });
         });
-        socket.on('disconnect', () => setSocketStatus('DISCONNECTED'));
-        socket.on('connect_error', () => setSocketStatus('ERROR'));
 
         socket.on('auction:admin-event', (event = {}) => {
             if (!event?.type) return;
@@ -122,11 +113,6 @@ const Dashboard = () => {
             if (event.type === 'BREAK_END') {
                 setBreakEndsAt(null);
             }
-
-            const eventLabel = event.type.replaceAll('_', ' ');
-            setLastAdminEvent(
-                `${eventLabel} | ${event.playerName || 'Player'}${event.teamName ? ` | ${event.teamName}` : ''}`
-            );
         });
 
         return () => {
@@ -163,10 +149,6 @@ const Dashboard = () => {
                         >
                             {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAM SQUADS')}
                         </button>
-                    </div>
-                    <div className="socket-banner">
-                        <span className={`socket-pill socket-pill--${socketStatus.toLowerCase()}`}>{socketStatus}</span>
-                        <span className="socket-event">{lastAdminEvent}</span>
                     </div>
                 </div>
             </header>
@@ -214,37 +196,56 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </section>
+                    <div className="projector-main">
+                        <section className="player-details-panel">
+                            <div className="player-image-frame">
+                                {currentPlayer?.image ? (
+                                    <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                                ) : (
+                                    <div className="player-image-placeholder-modern">👤</div>
+                                )}
+                            </div>
+                            <div className="player-text-info">
+                                <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
+                                <div className="stats-grid">
+                                    <div className="stat-item">
+                                        <span className="stat-label">Base Price</span>
+                                        <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">Country</span>
+                                        <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">Role</span>
+                                        <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">Player Rating</span>
+                                        <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
 
-                    <section className="bid-details-panel">
-                        <div className="bid-box current-bid-box">
-                            <span className="box-label">Current Bid</span>
-                            <div className="bid-amount">₹ {currentBidCr} CR</div>
-                        </div>
+                        <section className="bid-details-panel">
+                            <div className="bid-box current-bid-box">
+                                <span className="box-label">Current Bid</span>
+                                <div className="bid-amount">₹ {currentBidCr} CR</div>
+                            </div>
 
-                        <div className="bid-box team-box">
-                            <span className="box-label">Highest Bid</span>
-                            <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
-                            <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
-                        </div>
-
-                        <div className="bid-box my-team-box">
-                            <span className="box-label">Mumbai Mavericks</span>
-                            <div className="my-funds">Remaining: ₹ {myTeam.funds}</div>
-                            <div className="my-funds-sub">Spent: ₹ {spent} Cr</div>
-                        </div>
-                    </section>
+                            <div className="bid-box team-box">
+                                <span className="box-label">Highest Bid</span>
+                                <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
+                                <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                            </div>
+                        </section>
+                    </div>
+                    <div className="projector-footer-hint">
+                        Press 'S' for SOLD | Press 'U' for UNSOLD
+                    </div>
                 </div>
-            )}
-
-            {selectedTeam && (
-                <SquadModal
-                    team={selectedTeam}
-                    isMyTeam={selectedTeam.id === myTeamId}
-                    onClose={() => setSelectedTeam(null)}
-                />
-            )}
-        </div>
-    );
+            );
 };
 
-export default Dashboard;
+            export default Dashboard;

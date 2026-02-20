@@ -7,9 +7,10 @@ import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
+import { resolveSocketUrl } from './socketUrl';
 
 const ADMIN_NAME = 'Admin-1';
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = resolveSocketUrl();
 const DEFAULT_BREAK_SECONDS = 300;
 
 const getTeamCardOptions = (team) => {
@@ -95,8 +96,10 @@ const getTeamCardOptions = (team) => {
     }, []);
 
     useEffect(() => {
+        const isProd = import.meta.env.PROD;
         const socket = io(SOCKET_URL, {
-            transports: ['websocket', 'polling']
+            transports: isProd ? ['polling'] : ['polling', 'websocket'],
+            upgrade: !isProd
         });
 
         socketRef.current = socket;
