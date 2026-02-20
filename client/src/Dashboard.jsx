@@ -21,6 +21,7 @@ const Dashboard = () => {
     const [myTeamId] = useState("MUM"); // Hardcoded logged-in team
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
+    const [showTeamsView, setShowTeamsView] = useState(false);
     const socketRef = useRef(null);
 
     // Derived state for My Team
@@ -133,8 +134,13 @@ const Dashboard = () => {
                 </div>
 
                 <div className="header-right">
-                    <div className={`live-indicator ${breakSecondsLeft > 0 ? 'break' : ''}`}>
-                        {breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'BIDDING OPEN'}
+                    <div className="view-toggle-container">
+                        <button
+                            className={`view-toggle-btn ${showTeamsView ? 'back-btn' : ''}`}
+                            onClick={() => setShowTeamsView(!showTeamsView)}
+                        >
+                            {showTeamsView ? '← BACK TO AUCTION' : (breakSecondsLeft > 0 ? `BREAK ${formatTimer(breakSecondsLeft)}` : 'SHOW TEAMS')}
+                        </button>
                     </div>
                 </div>
             </header>
@@ -171,11 +177,11 @@ const Dashboard = () => {
                     </div>
                 </section>
 
-                <section className="bid-details-panel">
-                    <div className="bid-box current-bid-box">
-                        <span className="box-label">Current Bid</span>
-                        <div className="bid-amount">₹ {currentBidCr} CR</div>
-                    </div>
+                    <section className="bid-details-panel">
+                        <div className="bid-box current-bid-box">
+                            <span className="box-label">Current Bid</span>
+                            <div className="bid-amount">₹ {currentBidCr} CR</div>
+                        </div>
 
                     <div className="bid-box team-box">
                         <span className="box-label">Highest Bid</span>
