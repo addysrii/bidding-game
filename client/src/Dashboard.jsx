@@ -141,6 +141,7 @@ const Dashboard = () => {
                 setTimeout(() => setNotification(null), 2500);
 
                 markUnsold({ adminName: event.adminName || 'Admin' });
+                showActionAnimation('UNSOLD', 'UNSOLD');
             }
             if (event.type === 'NEXT_PLAYER') {
                 nextPlayer(event.player || null);
@@ -275,6 +276,29 @@ const Dashboard = () => {
                     onClose={() => setSelectedTeam(null)}
                 />
             )}
+
+            <AnimatePresence>
+                {actionOverlay && (
+                    <motion.div
+                        className={`dashboard-action-overlay ${actionOverlay.type.toLowerCase()}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div className="dashboard-action-overlay-card">
+                            <div className="overlay-title">
+                                {actionOverlay.type === 'SOLD' ? 'PLAYER SOLD' : 'PLAYER UNSOLD'}
+                            </div>
+                            <div className="overlay-msg">{actionOverlay.message}</div>
+                            {actionOverlay.type === 'SOLD' && currentPlayer && (
+                                <div className="overlay-player">
+                                    {currentPlayer.name}
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
