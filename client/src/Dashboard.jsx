@@ -52,8 +52,10 @@ const Dashboard = () => {
     }, [breakEndsAt]);
 
     useEffect(() => {
+        const isProd = import.meta.env.PROD;
         const socket = io(SOCKET_URL, {
-            transports: ['polling', 'websocket']
+            transports: isProd ? ['polling'] : ['polling', 'websocket'],
+            upgrade: !isProd
         });
 
         socketRef.current = socket;
