@@ -1,0 +1,559 @@
+.admin-container {
+    background: #ffffff;
+    color: #111111;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.admin-header {
+    flex-shrink: 0;
+    background: #ffffff;
+    border-bottom: 2px solid #111111;
+    margin-bottom: 0;
+}
+
+.admin-header h1 {
+    color: #111111;
+    letter-spacing: 2px;
+}
+
+.admin-header span {
+    color: #444444;
+}
+
+.under-construction-note {
+    margin: 1rem 1.5rem 0;
+    border: 2px dashed #111111;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: #f2f2f2;
+}
+
+.admin-main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 1.5rem 1.5rem;
+    width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    box-sizing: border-box;
+    min-height: 0;
+}
+
+.admin-main-layout.centered-layout {
+    align-items: stretch;
+    padding-top: 1rem;
+}
+
+.admin-stage-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1rem;
+    width: 100%;
+    align-items: stretch;
+}
+
+.center-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.card-animation-container {
+    width: 100%;
+    height: 420px;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.center-stage .player-card {
+    width: 100%;
+    height: 375px;
+    margin: 0;
+    padding: 1.25rem;
+    background: #fafafa;
+    border: 2px solid #111111;
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.center-stage .live-badge,
+.center-stage .bid-amount,
+.center-stage .player-country,
+.center-stage .player-image-placeholder,
+.center-stage .funds-remaining,
+.center-stage .player-count,
+.center-stage .team-name,
+.center-stage .team-code,
+.center-stage .stat-box .label {
+    color: #111111 !important;
+    border-color: #111111 !important;
+    text-shadow: none !important;
+}
+
+.center-stage .player-image-placeholder {
+    background: #e8e8e8;
+}
+
+.center-stage .auction-status {
+    border-top: 1px dashed #111111;
+}
+
+.admin-controls-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0;
+}
+
+.active-bid-entry {
+    border: 2px solid #111111;
+    padding: 0.75rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f8f8;
+}
+
+.active-bid-entry__meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.bid-lock-state {
+    justify-self: end;
+    font-weight: 700;
+}
+
+.bid-lock-state.open {
+    color: #166534;
+}
+
+.bid-lock-state.locked {
+    color: #7f1d1d;
+}
+
+.control-btn {
+    height: 56px;
+    font-size: 1rem;
+    border-radius: 0;
+    border: 2px solid #111111;
+    box-shadow: none;
+    background: #ffffff;
+    color: #111111;
+    font-weight: 700;
+}
+
+.control-btn:hover,
+.control-btn:focus {
+    transform: none;
+    box-shadow: none;
+    background: #f4f4f4;
+}
+
+.control-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.admin-log-card {
+    min-width: 0;
+    height: 100%;
+    min-height: 420px;
+    background: #ffffff;
+    border: 2px solid #111111;
+    border-radius: 0;
+    padding: 1rem;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.admin-log-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #111111;
+    border-bottom: 1px dashed #111111;
+    padding-bottom: 0.5rem;
+}
+
+.admin-log-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.admin-log-filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.admin-log-filters input,
+.admin-log-filters select {
+    height: 34px;
+    border: 1px solid #111111;
+    background: #ffffff;
+    padding: 0 0.5rem;
+    border-radius: 0;
+    color: #111111;
+    font-size: 0.78rem;
+}
+
+.admin-log-empty {
+    color: #555555;
+    font-size: 0.85rem;
+    margin: 0;
+    padding: 0.75rem 0;
+}
+
+.admin-log-entry {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    border: 1px dashed #111111;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.2rem 0.5rem;
+    align-items: center;
+    background: #f8f8f8;
+}
+
+.admin-log-entry--sold,
+.admin-log-entry--unsold {
+    border-left: 4px solid #111111;
+}
+
+.admin-log-player,
+.admin-log-status,
+.admin-log-price,
+.admin-log-team {
+    color: #111111;
+}
+
+.admin-log-status {
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.admin-log-team {
+    text-align: right;
+    font-size: 0.72rem;
+}
+
+.admin-log-meta {
+    font-size: 0.7rem;
+    color: #3f3f46;
+    grid-column: span 2;
+}
+
+.teams-section-full {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: #ffffff;
+    border: 2px solid #111111;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.teams-section-full h2 {
+    color: #111111;
+    margin: 0 0 0.75rem;
+    border-bottom: 1px dashed #111111;
+    padding-bottom: 0.45rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+}
+
+.teams-with-purse {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.team-purse-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    background: #fafafa;
+    border: 1px solid #111111;
+}
+
+.team-card-wrapper {
+    transition: none;
+}
+
+.team-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.team-action-btn {
+    height: 36px;
+    border: 1px solid #111111;
+    background: #ffffff;
+    color: #111111;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.team-action-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.team-action-btn--highest {
+    background: #f4f4f5;
+}
+
+.team-action-btn--sold {
+    background: #ecfdf3;
+}
+
+.team-purse-display {
+    padding: 0.75rem;
+    background: #ffffff;
+    border: 1px dashed #111111;
+}
+
+.team-name-label,
+.team-purse-container .purse-amount,
+.team-purse-container .currency,
+.team-purse-container .amount,
+.team-purse-container .label,
+.team-purse-container .purse-info,
+.team-purse-container .player-count,
+.team-purse-container .funds-remaining {
+    color: #111111 !important;
+}
+
+.team-purse-container .purse-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e5e5;
+    border-radius: 0;
+    overflow: hidden;
+    margin-top: 0.3rem;
+}
+
+.team-purse-container .purse-fill {
+    height: 100%;
+    border-radius: 0;
+    background: #111111 !important;
+}
+
+.admin-container .team-card {
+    border-radius: 0;
+    box-shadow: none;
+    background: #ffffff;
+    border: 1px solid #111111;
+}
+
+.admin-container .team-card:hover {
+    transform: none !important;
+    border-color: #111111 !important;
+}
+
+.admin-container .team-card .team-code,
+.admin-container .team-card .team-name,
+.admin-container .team-card .player-count,
+.admin-container .team-card .funds-remaining {
+    color: #111111 !important;
+}
+
+.notification-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.notification-content h1 {
+    font-size: 4rem;
+    font-weight: 800;
+    text-align: center;
+    margin: 0;
+    line-height: 1.1;
+    color: #111111 !important;
+    text-shadow: none !important;
+}
+
+.sell-backdrop {
+    z-index: 10000;
+}
+
+.sell-modal {
+    width: min(640px, 90vw);
+    background: #ffffff;
+    border: 2px solid #111111;
+    padding: 1rem;
+}
+
+.sell-modal h3 {
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.sell-modal p {
+    margin: 0.5rem 0;
+    color: #111111;
+}
+
+.sell-wallet-line {
+    font-size: 0.82rem;
+    margin-bottom: 0.5rem;
+}
+
+.sell-warning {
+    border: 1px solid #b91c1c;
+    background: #fee2e2;
+    color: #7f1d1d;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-template-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.card-template-item {
+    border: 1px solid #111111;
+    background: #ffffff;
+    color: #111111;
+    height: 40px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.card-template-item.selected {
+    border-width: 2px;
+    font-weight: 700;
+}
+
+.card-preview {
+    border: 1px dashed #111111;
+    padding: 0.5rem;
+}
+
+.card-preview-shell {
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.75rem;
+}
+
+.card-preview-shell span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.sell-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.sell-error {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: #991b1b;
+}
+
+@media (max-width: 1100px) {
+    .admin-stage-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-log-card {
+        min-height: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-main-layout {
+        padding: 0.75rem;
+    }
+
+    .under-construction-note {
+        margin: 0.75rem 0.75rem 0;
+        font-size: 0.75rem;
+    }
+
+    .card-animation-container,
+    .center-stage .player-card {
+        height: auto;
+        min-height: 360px;
+    }
+
+    .admin-controls-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .active-bid-entry {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .active-bid-entry__meta {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-log-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-log-entry {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .card-template-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .team-card-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .notification-content h1 {
+        font-size: 2rem;
+    }
+}
