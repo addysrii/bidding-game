@@ -53,7 +53,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         const socket = io(SOCKET_URL, {
-            transports: ['websocket', 'polling']
+            transports: ['polling', 'websocket']
         });
 
         socketRef.current = socket;
