@@ -46,7 +46,7 @@ const getTeamCardOptions = (team) => {
     ];
 };
 
-    const AdminPanel = () => {
+const AdminPanel = () => {
     const {
         teams,
         currentPlayer,
@@ -155,6 +155,7 @@ const getTeamCardOptions = (team) => {
             adminName: ADMIN_NAME,
             playerId: currentPlayer?.id || null,
             playerName: currentPlayer?.name || null,
+            player: currentPlayer, // FULL PLAYER OBJECT FOR SYNC
             currentBid: currentPlayer?.currentBid || 0,
             highestBidder,
             ...extra,
@@ -173,7 +174,8 @@ const getTeamCardOptions = (team) => {
         emitAdminEvent('BID', {
             teamId,
             teamName: bidTeam?.name || teamId,
-            bidAmount: nextBidValue
+            bidAmount: nextBidValue,
+            player: { ...currentPlayer, currentBid: nextBidValue } // Sync updated bid
         });
     };
 
@@ -219,12 +221,12 @@ const getTeamCardOptions = (team) => {
     const handleUnsold = () => {
         if (isPlayerLocked) return;
         markUnsold({ adminName: ADMIN_NAME });
-        emitAdminEvent('UNSOLD');
+        emitAdminEvent('UNSOLD', { playerName: currentPlayer?.name });
     };
 
     const handleNextPlayer = () => {
-        nextPlayer();
-        emitAdminEvent('NEXT_PLAYER');
+        const newPlayer = nextPlayer();
+        emitAdminEvent('NEXT_PLAYER', { player: newPlayer });
     };
 
     const handleUndo = () => {
@@ -305,17 +307,6 @@ const getTeamCardOptions = (team) => {
                                     />
                                 </motion.div>
                             </AnimatePresence>
-                        </div>
-
-                        <div className="active-bid-entry">
-                            <div className="active-bid-entry__meta">
-                                <span>{currentPlayer?.name || 'No active player'}</span>
-                                <span>{currentPlayer?.currentBid || 0} L</span>
-                                <span>{winningTeam?.name || 'No bidder'}</span>
-                                <span className={`bid-lock-state ${isPlayerLocked ? 'locked' : 'open'}`}>
-                                    {isPlayerLocked ? 'LOCKED' : 'OPEN'}
-                                </span>
-                            </div>
                         </div>
 
                         <div className="admin-controls-bar">

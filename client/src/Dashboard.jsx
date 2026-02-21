@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { resolveSocketUrl } from './socketUrl';
 import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SOCKET_URL = resolveSocketUrl();
 
@@ -26,6 +27,7 @@ const Dashboard = () => {
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
     const [showTeamsView, setShowTeamsView] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
+    const [notification, setNotification] = useState(null);
     const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
     const auctionActionsRef = useRef({});
@@ -120,7 +122,8 @@ const Dashboard = () => {
             if (event.type === 'SOLD') {
                 actions.sellPlayer?.({
                     adminName: event.adminName || 'Admin',
-                    assignedCard: event.assignedCard || null
+                    assignedCard: event.assignedCard || null,
+                    player: event.player || null
                 });
                 showActionAnimation(
                     'SOLD',
@@ -268,13 +271,28 @@ const Dashboard = () => {
                 />
             )}
 
-            {actionOverlay && (
-                <div className={`dashboard-action-overlay ${actionOverlay.type === 'SOLD' ? 'sold' : 'unsold'}`}>
-                    <div className="dashboard-action-overlay-card">
-                        {actionOverlay.message}
-                    </div>
-                </div>
-            )}
+            <AnimatePresence>
+                {actionOverlay && (
+                    <motion.div
+                        className={`dashboard-action-overlay ${actionOverlay.type.toLowerCase()}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div className="dashboard-action-overlay-card">
+                            <div className="overlay-title">
+                                {actionOverlay.type === 'SOLD' ? 'PLAYER SOLD' : 'PLAYER UNSOLD'}
+                            </div>
+                            <div className="overlay-msg">{actionOverlay.message}</div>
+                            {actionOverlay.type === 'SOLD' && currentPlayer && (
+                                <div className="overlay-player">
+                                    {currentPlayer.name}
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

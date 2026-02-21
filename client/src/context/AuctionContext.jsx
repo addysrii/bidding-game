@@ -168,13 +168,13 @@ export const AuctionProvider = ({ children }) => {
             return { success: false, reason: 'PLAYER_CLOSED' };
         }
 
-        const winningTeam = getTeamById(highestBidder);
+        const winningTeam = getTeamById(winningTeamId);
         if (!winningTeam) {
             return { success: false, reason: 'INVALID_TEAM' };
         }
 
         const walletBefore = getFundsInCr(winningTeam.funds);
-        const costInCr = (currentPlayer.currentBid || 0) / 100;
+        const costInCr = bidAmount / 100;
 
         if (walletBefore < costInCr) {
             return {
@@ -187,10 +187,11 @@ export const AuctionProvider = ({ children }) => {
 
         const walletAfter = walletBefore - costInCr;
         const soldPlayer = {
-            ...currentPlayer,
-            soldPrice: `${currentPlayer.currentBid} L`,
-            role: currentPlayer.role || 'Batsman',
-            soldTo: highestBidder,
+            ...(forcedPlayer || currentPlayer),
+            currentBid: bidAmount,
+            soldPrice: `${bidAmount} L`,
+            role: (forcedPlayer || currentPlayer).role || 'Batsman',
+            soldTo: winningTeamId,
             status: 'SOLD',
             isClosed: true,
             assignedCard: assignedCard || null
@@ -198,7 +199,7 @@ export const AuctionProvider = ({ children }) => {
 
         runWithHistory(() => {
             setTeams(prevTeams => prevTeams.map(team => {
-                if (team.id === highestBidder) {
+                if (team.id === winningTeamId) {
                     return {
                         ...team,
                         funds: toFundsLabel(walletAfter),
@@ -215,7 +216,7 @@ export const AuctionProvider = ({ children }) => {
                 playerName: currentPlayer?.name || '—',
                 soldAmount: `${currentPlayer.currentBid} L`,
                 soldAmountInCr: costInCr,
-                teamId: highestBidder,
+                teamId: winningTeamId,
                 teamName: winningTeam.name,
                 walletBefore,
                 walletAfter,
@@ -276,7 +277,8 @@ export const AuctionProvider = ({ children }) => {
         return true;
     };
 
-    const nextPlayer = () => {
+    const nextPlayer = (overridePlayer = null) => {
+        let newPlayer;
         runWithHistory(() => {
             if (playerPool.length === 0) {
                 setCurrentPlayer(null);
@@ -291,6 +293,7 @@ export const AuctionProvider = ({ children }) => {
             setHighestBidder(null);
             setBidHistory([]);
         });
+        return newPlayer;
     };
 
     const undoLastAction = () => {

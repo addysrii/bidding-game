@@ -21,9 +21,8 @@
     min-height: 100vh;
     overflow: hidden;
     background:
-        radial-gradient(circle at 10% 15%, rgba(54, 201, 255, 0.16), transparent 35%),
-        radial-gradient(circle at 88% 12%, rgba(23, 246, 170, 0.14), transparent 35%),
-        linear-gradient(135deg, var(--admin-bg-0), var(--admin-bg-1) 55%, var(--admin-bg-2));
+        radial-gradient(circle at top right, #1a1a3a 0%, #0b0b18 60%),
+        radial-gradient(circle at bottom left, #151334 0%, #070712 100%);
 }
 
 .admin-header {
@@ -90,16 +89,21 @@
 .center-stage {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 2rem;
+    /* Restore gap for clear separation */
     min-width: 0;
+    align-items: center;
+    /* Ensure child containers are centered */
 }
 
 .card-animation-container {
     width: 100%;
-    min-height: 420px;
+    max-width: 800px;
+    /* Constrain width to help with centering and alignment */
+    min-height: 400px;
     display: flex;
     justify-content: center;
-    align-items: stretch;
+    align-items: center;
 }
 
 .center-stage .player-card {
@@ -161,24 +165,13 @@
 }
 
 .admin-controls-bar {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    display: flex;
+    justify-content: center;
     width: 100%;
     margin: 0;
 }
 
-.active-bid-entry {
-    border: 1px solid var(--admin-panel-border);
-    border-radius: 12px;
-    padding: 0.8rem;
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--admin-panel);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-}
+/* active-bid-entry removed from JSX */
 
 .active-bid-entry__meta {
     display: grid;
@@ -214,87 +207,102 @@
     height: 52px;
     font-size: 0.95rem;
     border-radius: 12px;
-    border: 1px solid rgba(109, 144, 243, 0.45);
-    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.22);
-    background: linear-gradient(135deg, rgba(17, 36, 82, 0.95), rgba(14, 30, 66, 0.95));
-    color: #eaf3ff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    background: #1e293b;
+    color: #ffffff;
     font-weight: 700;
     letter-spacing: 0.7px;
     text-transform: uppercase;
-    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.control-btn:hover,
-.control-btn:focus {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-    filter: brightness(1.08);
+.control-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    filter: brightness(1.15);
+}
+
+.control-btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .control-btn:disabled {
-    opacity: 0.45;
+    opacity: 0.5;
     cursor: not-allowed;
+    filter: grayscale(0.5);
 }
 
 .control-btn.next-btn {
-    border-color: rgba(54, 201, 255, 0.58);
-    background: linear-gradient(135deg, rgba(18, 58, 103, 0.95), rgba(10, 39, 77, 0.95));
+    background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
 
 .control-btn.unsold-btn {
-    border-color: rgba(255, 93, 125, 0.5);
-    background: linear-gradient(135deg, rgba(93, 23, 41, 0.95), rgba(74, 14, 27, 0.95));
+    width: 320px;
+    /* Slightly wider for better presence */
+    height: 48px;
+    font-size: 1rem;
+    /* Larger text */
+    background: linear-gradient(135deg, #ef4444, #991b1b);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .control-btn.sold-btn {
-    border-color: rgba(23, 246, 170, 0.56);
-    background: linear-gradient(135deg, rgba(9, 84, 61, 0.95), rgba(11, 62, 48, 0.95));
+    background: linear-gradient(to bottom, #10b981, #047857);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
 .control-btn.break-btn {
-    border-color: rgba(251, 191, 36, 0.65);
-    background: linear-gradient(135deg, rgba(98, 55, 7, 0.95), rgba(75, 42, 5, 0.95));
+    background: linear-gradient(to bottom, #f59e0b, #b45309);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
 }
 
 .control-btn.break-btn.active {
-    border-color: rgba(255, 93, 125, 0.65);
-    background: linear-gradient(135deg, rgba(93, 23, 41, 0.95), rgba(74, 14, 27, 0.95));
+    background: linear-gradient(to bottom, #6366f1, #4338ca);
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
 }
 
 .socket-status {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 116px;
-    height: 36px;
-    padding: 0 0.75rem;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.45);
-    font-size: 0.7rem;
-    font-weight: 700;
+    min-width: 140px;
+    height: 44px;
+    padding: 0 1.5rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: rgba(15, 26, 52, 0.65);
-    color: #d4e6ff;
+    letter-spacing: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
 }
 
 .socket-status--connected {
-    border-color: rgba(23, 246, 170, 0.7);
-    color: #7df9cd;
-    background: rgba(23, 246, 170, 0.12);
+    background: #10b981 !important;
+    /* Forces solid emerald */
+    border-color: #34d399;
+    color: #ffffff !important;
+    text-shadow: none;
 }
 
 .socket-status--connecting {
-    border-color: rgba(54, 201, 255, 0.7);
-    color: #8de4ff;
-    background: rgba(54, 201, 255, 0.14);
+    background: #3b82f6 !important;
+    border-color: #60a5fa;
+    color: #ffffff !important;
+    text-shadow: none;
 }
 
 .socket-status--disconnected,
 .socket-status--error {
-    border-color: rgba(255, 93, 125, 0.74);
-    color: #ff95ab;
-    background: rgba(255, 93, 125, 0.12);
+    background: #ef4444 !important;
+    border-color: #f87171;
+    color: #ffffff !important;
+    text-shadow: none;
 }
 
 .socket-peer-event {
@@ -316,7 +324,10 @@
 
 .admin-log-card {
     min-width: 0;
-    min-height: 420px;
+    height: 100%;
+    /* Take full height of the grid row */
+    min-height: 444px;
+    /* Matches 400px card + 44px button roughly */
     background: var(--admin-panel);
     border: 1px solid var(--admin-panel-border);
     border-radius: 16px;
@@ -325,6 +336,8 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    overflow: hidden;
+    /* Ensure it's fixed */
 }
 
 .admin-log-title {
@@ -355,24 +368,26 @@
     height: 32px;
     min-width: 74px;
     border-radius: 9px;
-    border: 1px solid rgba(109, 144, 243, 0.45);
-    background: rgba(11, 22, 48, 0.92);
-    color: #deebff;
+    border: none;
+    background: #334155;
+    color: #ffffff;
     font-size: 0.68rem;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.7px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: transform 0.16s ease, filter 0.16s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.16s ease;
 }
 
-.admin-log-btn:hover {
+.admin-log-btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    filter: brightness(1.08);
+    background: #475569;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .admin-log-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
 }
 
@@ -383,15 +398,15 @@
     flex-direction: column;
     gap: 0.55rem;
     padding-right: 0.2rem;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .admin-log-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.admin-log-list::-webkit-scrollbar-thumb {
-    background: rgba(99, 132, 230, 0.55);
-    border-radius: 999px;
+    display: none;
+    /* Hide scrollbar for Chrome, Safari and Opera */
 }
 
 .admin-log-empty {
@@ -505,34 +520,36 @@
 
 .team-action-btn {
     height: 38px;
-    border: 1px solid rgba(109, 144, 243, 0.45);
-    border-radius: 10px;
-    background: rgba(12, 25, 55, 0.9);
-    color: #deebff;
+    border: none;
+    border-radius: 8px;
+    background: #334155;
+    color: #ffffff;
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.55px;
     cursor: pointer;
-    transition: transform 0.16s ease, filter 0.16s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.16s ease;
 }
 
-.team-action-btn:hover {
+.team-action-btn:hover:not(:disabled) {
     transform: translateY(-1px);
-    filter: brightness(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    filter: brightness(1.2);
 }
 
 .team-action-btn:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
 .team-action-btn--highest {
-    border-color: rgba(54, 201, 255, 0.5);
+    background: #3b82f6;
 }
 
 .team-action-btn--sold {
-    border-color: rgba(23, 246, 170, 0.5);
+    background: #10b981;
 }
 
 .team-purse-display {
@@ -663,21 +680,29 @@
 }
 
 .card-template-item {
-    border: 1px solid rgba(109, 144, 243, 0.45);
+    border: 2px solid #334155;
     border-radius: 10px;
-    background: rgba(7, 13, 30, 0.84);
-    color: #deebff;
+    background: #1e293b;
+    color: #cbd5e1;
     height: 40px;
     cursor: pointer;
     font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+.card-template-item:hover:not(.selected) {
+    border-color: #475569;
+    background: #273549;
 }
 
 .card-template-item.selected {
-    border-width: 1px;
-    border-color: rgba(54, 201, 255, 0.85);
-    box-shadow: 0 0 0 1px rgba(54, 201, 255, 0.25);
-    font-weight: 700;
+    border-color: #3b82f6;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-weight: 800;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
 }
 
 .card-preview {
@@ -788,6 +813,15 @@
         width: 100%;
         flex-wrap: wrap;
         gap: 0.5rem;
+    }
+
+    .socket-status {
+        min-width: 80px;
+        height: 32px;
+        padding: 0 0.75rem;
+        font-size: 0.65rem;
+        letter-spacing: 1px;
+        border-radius: 8px;
     }
 
     .socket-peer-event {
