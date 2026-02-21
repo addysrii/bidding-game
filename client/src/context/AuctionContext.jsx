@@ -1,5 +1,6 @@
-import React, { createContext, useRef, useState, useContext } from 'react';
-import { livePlayer as initialPlayer, teams as initialTeams } from '../mockData';
+import React, { createContext, useEffect, useRef, useState, useContext } from 'react';
+import { teams as initialTeams } from '../mockData';
+import { resolveSocketUrl } from '../socketUrl';
 
 const AuctionContext = createContext();
 
@@ -12,33 +13,44 @@ const cloneState = (value) => {
     return JSON.parse(JSON.stringify(value));
 };
 
-// Helper to generate next player (mock)
-const getNextPlayer = (id) => ({
-    ...initialPlayer,
-    id: id + 1,
-    name: `Player ${id + 1}`,
-    role: ['Batsman', 'Bowler', 'All-Rounder', 'Wicket Keeper'][Math.floor(Math.random() * 4)],
-    basePrice: "20 L",
-    currentBid: "20 L",
-    highestBidder: null,
-    image: null,
-    isClosed: false,
-    status: 'OPEN',
-    assignedCard: null
-});
+const parseLakhs = (value, fallback = 0) => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    const match = String(value || '').match(/([0-9.]+)/);
+    return match ? Number(match[1]) : fallback;
+};
+
+const toAuctionPlayer = (player) => {
+    const basePriceLakhs = parseLakhs(player?.basePrice, 0);
+
+    return {
+        id: player?._id || player?.id,
+        name: player?.name || 'Unknown Player',
+        country: player?.country || 'IND',
+        role: player?.role || 'Batsman',
+        matches: player?.matches ?? 0,
+        runs: player?.runs ?? 0,
+        wickets: player?.wickets ?? 0,
+        average: player?.average ?? 0,
+        strikeRate: player?.strikeRate ?? 0,
+        rating: player?.rating ?? 'N/A',
+        basePrice: basePriceLakhs,
+        currentBid: basePriceLakhs,
+        highestBidder: null,
+        image: player?.profilePicture || player?.image || null,
+        isClosed: false,
+        status: 'OPEN',
+        assignedCard: null
+    };
+};
 
 export const AuctionProvider = ({ children }) => {
+    const [playerPool, setPlayerPool] = useState([]);
+    const [activePlayerIndex, setActivePlayerIndex] = useState(0);
     const [teams, setTeams] = useState(initialTeams.map((team) => ({
         ...team,
         roster: team.roster || []
     })));
-    const [currentPlayer, setCurrentPlayer] = useState({
-        ...initialPlayer,
-        currentBid: 50, // Bid in Lakhs
-        isClosed: false,
-        status: 'OPEN',
-        assignedCard: null
-    });
+    const [currentPlayer, setCurrentPlayer] = useState(null);
     const [highestBidder, setHighestBidder] = useState(null);
     const [bidHistory, setBidHistory] = useState([]);
     const [auctionLogs, setAuctionLogs] = useState([]);
@@ -46,9 +58,44 @@ export const AuctionProvider = ({ children }) => {
     const undoStackRef = useRef([]);
     const redoStackRef = useRef([]);
 
+    useEffect(() => {
+        let ignore = false;
+        const apiBaseUrl = resolveSocketUrl();
+
+        const loadPlayers = async () => {
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/players`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch players: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (!Array.isArray(data) || ignore) return;
+
+                setPlayerPool(data);
+                setActivePlayerIndex(0);
+                setCurrentPlayer(data[0] ? toAuctionPlayer(data[0]) : null);
+                setHighestBidder(null);
+                setBidHistory([]);
+            } catch (error) {
+                console.error('Unable to load players from database.', error);
+                setPlayerPool([]);
+                setCurrentPlayer(null);
+            }
+        };
+
+        loadPlayers();
+
+        return () => {
+            ignore = true;
+        };
+    }, []);
+
     const bumpHistoryVersion = () => setHistoryVersion((prev) => prev + 1);
 
     const getSnapshot = () => cloneState({
+        playerPool,
+        activePlayerIndex,
         teams,
         currentPlayer,
         highestBidder,
@@ -58,6 +105,8 @@ export const AuctionProvider = ({ children }) => {
 
     const applySnapshot = (snapshot) => {
         if (!snapshot) return;
+        setPlayerPool(snapshot.playerPool || []);
+        setActivePlayerIndex(snapshot.activePlayerIndex ?? 0);
         setTeams(snapshot.teams || []);
         setCurrentPlayer(snapshot.currentPlayer || null);
         setHighestBidder(snapshot.highestBidder ?? null);
@@ -80,6 +129,7 @@ export const AuctionProvider = ({ children }) => {
     const toFundsLabel = (valueInCr) => `${Math.max(valueInCr, 0).toFixed(2)} Cr`;
 
     const placeBid = (teamId, amount) => {
+        if (!currentPlayer) return false;
         if (currentPlayer?.isClosed) return false;
 
         // Validation: verify team has enough funds
@@ -106,6 +156,10 @@ export const AuctionProvider = ({ children }) => {
     };
 
     const sellPlayer = ({ assignedCard, adminName = 'Admin' } = {}) => {
+        if (!currentPlayer) {
+            return { success: false, reason: 'NO_ACTIVE_PLAYER' };
+        }
+
         if (!highestBidder) {
             return { success: false, reason: 'NO_BIDDER' };
         }
@@ -190,6 +244,7 @@ export const AuctionProvider = ({ children }) => {
     };
 
     const markUnsold = ({ adminName = 'Admin' } = {}) => {
+        if (!currentPlayer) return false;
         if (currentPlayer?.isClosed) return false;
 
         runWithHistory(() => {
@@ -223,10 +278,16 @@ export const AuctionProvider = ({ children }) => {
 
     const nextPlayer = () => {
         runWithHistory(() => {
-            setCurrentPlayer(prev => ({
-                ...getNextPlayer(prev.id),
-                currentBid: 20
-            }));
+            if (playerPool.length === 0) {
+                setCurrentPlayer(null);
+                setHighestBidder(null);
+                setBidHistory([]);
+                return;
+            }
+
+            const nextIndex = (activePlayerIndex + 1) % playerPool.length;
+            setActivePlayerIndex(nextIndex);
+            setCurrentPlayer(toAuctionPlayer(playerPool[nextIndex]));
             setHighestBidder(null);
             setBidHistory([]);
         });

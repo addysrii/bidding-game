@@ -28,6 +28,7 @@ const Dashboard = () => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const teamsSectionRef = useRef(null);
     const socketRef = useRef(null);
+    const auctionActionsRef = useRef({});
     const overlayTimerRef = useRef(null);
     const [actionOverlay, setActionOverlay] = useState(null);
 
@@ -41,6 +42,18 @@ const Dashboard = () => {
 
     const currentBidLakhs = Number(currentPlayer?.currentBid || 0);
     const currentBidCr = (currentBidLakhs / 100).toFixed(2);
+
+    useEffect(() => {
+        auctionActionsRef.current = {
+            placeBid,
+            sellPlayer,
+            markUnsold,
+            nextPlayer,
+            undoLastAction,
+            redoLastAction,
+            syncAuctionState
+        };
+    }, [placeBid, sellPlayer, markUnsold, nextPlayer, undoLastAction, redoLastAction, syncAuctionState]);
 
     useEffect(() => {
         if (!breakEndsAt) {
@@ -99,12 +112,13 @@ const Dashboard = () => {
 
         socket.on('auction:admin-event', (event = {}) => {
             if (!event?.type) return;
+            const actions = auctionActionsRef.current;
 
             if (event.type === 'BID' && event.teamId && Number.isFinite(Number(event.bidAmount))) {
-                placeBid(event.teamId, Number(event.bidAmount));
+                actions.placeBid?.(event.teamId, Number(event.bidAmount));
             }
             if (event.type === 'SOLD') {
-                sellPlayer({
+                actions.sellPlayer?.({
                     adminName: event.adminName || 'Admin',
                     assignedCard: event.assignedCard || null
                 });
@@ -114,27 +128,27 @@ const Dashboard = () => {
                 );
             }
             if (event.type === 'UNSOLD') {
-                markUnsold({ adminName: event.adminName || 'Admin' });
+                actions.markUnsold?.({ adminName: event.adminName || 'Admin' });
                 showActionAnimation(
                     'UNSOLD',
                     `UNSOLD: ${(event.playerName || 'PLAYER').toUpperCase()}`
                 );
             }
             if (event.type === 'NEXT_PLAYER') {
-                nextPlayer();
+                actions.nextPlayer?.();
             }
             if (event.type === 'UNDO') {
                 if (event.stateSnapshot) {
-                    syncAuctionState(event.stateSnapshot);
+                    actions.syncAuctionState?.(event.stateSnapshot);
                 } else {
-                    undoLastAction();
+                    actions.undoLastAction?.();
                 }
             }
             if (event.type === 'REDO') {
                 if (event.stateSnapshot) {
-                    syncAuctionState(event.stateSnapshot);
+                    actions.syncAuctionState?.(event.stateSnapshot);
                 } else {
-                    redoLastAction();
+                    actions.redoLastAction?.();
                 }
             }
             if (event.type === 'BREAK_START') {

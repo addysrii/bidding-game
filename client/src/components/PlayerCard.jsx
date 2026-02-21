@@ -23,7 +23,11 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
 
             <div className="player-details">
                 <div className="player-image-placeholder">
-                    👤
+                    {player?.image ? (
+                        <img src={player.image} alt={player?.name || 'Player'} />
+                    ) : (
+                        '👤'
+                    )}
                 </div>
 
                 <div className="player-info">
