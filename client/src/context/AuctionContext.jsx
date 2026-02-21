@@ -168,6 +168,8 @@ export const AuctionProvider = ({ children }) => {
             return { success: false, reason: 'PLAYER_CLOSED' };
         }
 
+        const winningTeamId = highestBidder;
+        const bidAmount = currentPlayer.currentBid;
         const winningTeam = getTeamById(winningTeamId);
         if (!winningTeam) {
             return { success: false, reason: 'INVALID_TEAM' };
@@ -187,10 +189,10 @@ export const AuctionProvider = ({ children }) => {
 
         const walletAfter = walletBefore - costInCr;
         const soldPlayer = {
-            ...(forcedPlayer || currentPlayer),
+            ...currentPlayer,
             currentBid: bidAmount,
             soldPrice: `${bidAmount} L`,
-            role: (forcedPlayer || currentPlayer).role || 'Batsman',
+            role: currentPlayer.role || 'Batsman',
             soldTo: winningTeamId,
             status: 'SOLD',
             isClosed: true,
@@ -203,7 +205,7 @@ export const AuctionProvider = ({ children }) => {
                     return {
                         ...team,
                         funds: toFundsLabel(walletAfter),
-                        players: team.players + 1,
+                        players: (team.players || 0) + 1,
                         roster: [...(team.roster || []), soldPlayer]
                     };
                 }
@@ -288,8 +290,9 @@ export const AuctionProvider = ({ children }) => {
             }
 
             const nextIndex = (activePlayerIndex + 1) % playerPool.length;
+            newPlayer = toAuctionPlayer(playerPool[nextIndex]);
             setActivePlayerIndex(nextIndex);
-            setCurrentPlayer(toAuctionPlayer(playerPool[nextIndex]));
+            setCurrentPlayer(newPlayer);
             setHighestBidder(null);
             setBidHistory([]);
         });
