@@ -50,12 +50,16 @@ const AdminPanel = () => {
     const {
         teams,
         currentPlayer,
+        selectedCategory,
+        availableCategories,
+        categoryPlayers,
         highestBidder,
         auctionLogs,
         placeBid,
         sellPlayer,
         markUnsold,
         nextPlayer,
+        setActiveCategory,
         undoLastAction,
         redoLastAction,
         canUndo,
@@ -177,6 +181,12 @@ const AdminPanel = () => {
             bidAmount: nextBidValue,
             player: { ...currentPlayer, currentBid: nextBidValue } // Sync updated bid
         });
+        
+        // Emit player update event to refresh player data on dashboards
+        emitAdminEvent('PLAYER_UPDATED', {
+            playerId: currentPlayer?.id,
+            playerName: currentPlayer?.name
+        });
     };
 
     const openSellModal = (teamId = highestBidder) => {
@@ -261,6 +271,12 @@ const AdminPanel = () => {
         emitAdminEvent('BREAK_END');
     };
 
+    const handleCategoryChange = (event) => {
+        const nextCategory = event.target.value;
+        setActiveCategory(nextCategory, { withHistory: true });
+        emitAdminEvent('CATEGORY_CHANGED', { category: nextCategory });
+    };
+
     return (
         <div className="dashboard-container admin-container">
             <header className="dashboard-header admin-header">
@@ -269,6 +285,20 @@ const AdminPanel = () => {
                     <span>Tournament Control Center</span>
                 </div>
                 <div className="header-right">
+                    <div className="category-switcher">
+                        <label htmlFor="admin-category">Category</label>
+                        <select
+                            id="admin-category"
+                            value={selectedCategory}
+                            onChange={handleCategoryChange}
+                        >
+                            {availableCategories.map((category) => (
+                                <option key={category} value={category}>
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <span className={`socket-status socket-status--${socketStatus.toLowerCase()}`}>
                         {socketStatus}
                     </span>
@@ -317,6 +347,26 @@ const AdminPanel = () => {
                             >
                                 UNSOLD
                             </button>
+                        </div>
+
+                        <div className="category-player-strip">
+                            <div className="category-player-strip__title">
+                                {selectedCategory} Players ({categoryPlayers.length})
+                            </div>
+                            <div className="category-player-strip__list">
+                                {categoryPlayers.length === 0 ? (
+                                    <span className="category-player-chip empty">No players in this category.</span>
+                                ) : (
+                                    categoryPlayers.map((player) => (
+                                        <span
+                                            key={player.id}
+                                            className={`category-player-chip ${currentPlayer?.id === player.id ? 'active' : ''}`}
+                                        >
+                                            {player.name}
+                                        </span>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
 

@@ -21,6 +21,10 @@ const playerSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true
+    },
+    category: {
+      type: String,
+      trim: true
     }
   },
   {

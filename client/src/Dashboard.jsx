@@ -13,14 +13,18 @@ const Dashboard = () => {
     const {
         teams,
         currentPlayer,
+        selectedCategory,
+        categoryPlayers,
         highestBidder,
         placeBid,
         sellPlayer,
         markUnsold,
         nextPlayer,
+        setActiveCategory,
         undoLastAction,
         redoLastAction,
-        syncAuctionState
+        syncAuctionState,
+        refreshPlayerData
     } = useAuction();
     const [myTeamId] = useState("MUM"); // Hardcoded logged-in team
     const [breakEndsAt, setBreakEndsAt] = useState(null);
@@ -51,11 +55,13 @@ const Dashboard = () => {
             sellPlayer,
             markUnsold,
             nextPlayer,
+            setActiveCategory,
             undoLastAction,
             redoLastAction,
-            syncAuctionState
+            syncAuctionState,
+            refreshPlayerData
         };
-    }, [placeBid, sellPlayer, markUnsold, nextPlayer, undoLastAction, redoLastAction, syncAuctionState]);
+    }, [placeBid, sellPlayer, markUnsold, nextPlayer, setActiveCategory, undoLastAction, redoLastAction, syncAuctionState, refreshPlayerData]);
 
     useEffect(() => {
         if (!breakEndsAt) {
@@ -83,6 +89,15 @@ const Dashboard = () => {
             }
         };
     }, []);
+
+    // Periodic refresh of player data - updates every 3 seconds
+    useEffect(() => {
+        const refreshInterval = setInterval(() => {
+            refreshPlayerData?.();
+        }, 3000);
+
+        return () => clearInterval(refreshInterval);
+    }, [refreshPlayerData]);
 
     const showActionAnimation = (type, message) => {
         if (overlayTimerRef.current) {
@@ -161,13 +176,20 @@ const Dashboard = () => {
             if (event.type === 'BREAK_END') {
                 setBreakEndsAt(null);
             }
+            if (event.type === 'CATEGORY_CHANGED' && event.category) {
+                actions.setActiveCategory?.(event.category);
+            }
+            // Refresh players when admin updates player data
+            if (event.type === 'PLAYER_UPDATED' || event.type === 'PLAYER_CHANGED') {
+                refreshPlayerData?.();
+            }
         });
 
         return () => {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, []);
+    }, [refreshPlayerData]);
 
     const formatTimer = (totalSeconds) => {
         const mins = Math.floor(totalSeconds / 60);
@@ -211,55 +233,79 @@ const Dashboard = () => {
                     />
                 </div>
             ) : (
-                <div className="projector-main">
-                    <section className="player-details-panel">
-                        <div className="player-image-frame">
-                            {currentPlayer?.image ? (
-                                <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                <>
+                    <section className="dashboard-category-strip">
+                        <div className="dashboard-category-head">
+                            <span className="dashboard-category-title">
+                                {selectedCategory} PLAYERS ({categoryPlayers.length})
+                            </span>
+                        </div>
+                        <div className="dashboard-category-list">
+                            {categoryPlayers.length === 0 ? (
+                                <span className="dashboard-category-chip empty">No players available</span>
                             ) : (
-                                <div className="player-image-placeholder-modern">👤</div>
+                                categoryPlayers.map((player) => (
+                                    <span
+                                        key={player.id}
+                                        className={`dashboard-category-chip ${player.id === currentPlayer?.id ? 'active' : ''}`}
+                                    >
+                                        {player.name}
+                                    </span>
+                                ))
                             )}
                         </div>
-                        <div className="player-text-info">
-                            <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
-                            <div className="stats-grid">
-                                <div className="stat-item">
-                                    <span className="stat-label">Base Price</span>
-                                    <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-label">Country</span>
-                                    <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-label">Role</span>
-                                    <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
-                                </div>
-                                <div className="stat-item">
-                                    <span className="stat-label">Player Rating</span>
-                                    <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
+                    </section>
+
+                    <div className="projector-main">
+                        <section className="player-details-panel">
+                            <div className="player-image-frame">
+                                {currentPlayer?.image ? (
+                                    <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                                ) : (
+                                    <div className="player-image-placeholder-modern">👤</div>
+                                )}
+                            </div>
+                            <div className="player-text-info">
+                                <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
+                                <div className="stats-grid">
+                                    <div className="stat-item">
+                                        <span className="stat-label">Base Price</span>
+                                        <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                                    </div>
+                                    {/* <div className="stat-item">
+                                        <span className="stat-label">Country</span>
+                                        <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
+                                    </div> */}
+                                    <div className="stat-item">
+                                        <span className="stat-label">Role</span>
+                                        <span className="stat-value">{(currentPlayer?.category || '—').toUpperCase()}</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-label">Player Rating</span>
+                                        <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
 
-                    <section className="bid-details-panel">
-                        <div className="bid-box current-bid-box">
-                            <span className="box-label">Current Bid</span>
-                            <div className="bid-amount">₹ {currentBidCr} CR</div>
-                        </div>
+                        <section className="bid-details-panel">
+                            <div className="bid-box current-bid-box">
+                                <span className="box-label">Current Bid</span>
+                                <div className="bid-amount">₹ {currentBidCr} CR</div>
+                            </div>
 
-                        <div className="bid-box team-box">
-                            <span className="box-label">Highest Bid</span>
-                            <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
-                            <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
-                        </div>
-                    </section>
+                            <div className="bid-box team-box">
+                                <span className="box-label">Highest Bid</span>
+                                <div className="team-name">{highestBidTeam?.name || 'No Bidder Yet'}</div>
+                                <div className="team-logo-small">{highestBidTeam?.code || '—'}</div>
+                            </div>
+                        </section>
 
-                    <div className="projector-footer-hint">
-                        Press 'S' for SOLD | Press 'U' for UNSOLD
+                        <div className="projector-footer-hint">
+                            Press 'S' for SOLD | Press 'U' for UNSOLD
+                        </div>
                     </div>
-                </div>
+                </>
             )}
 
             {selectedTeam && (

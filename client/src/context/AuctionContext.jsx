@@ -19,6 +19,22 @@ const parseLakhs = (value, fallback = 0) => {
     return match ? Number(match[1]) : fallback;
 };
 
+const getPlayerCategory = (player) => {
+    const rawCategory = player?.category || player?.role || 'Uncategorized';
+    return String(rawCategory).trim() || 'Uncategorized';
+};
+
+const getAvailableCategories = (players = []) => {
+    const categories = new Set();
+    players.forEach((player) => categories.add(getPlayerCategory(player)));
+    return Array.from(categories);
+};
+
+const playerMatchesCategory = (player, category) => {
+    if (!category || category === 'ALL') return true;
+    return getPlayerCategory(player) === category;
+};
+
 const toAuctionPlayer = (player) => {
     const basePriceLakhs = parseLakhs(player?.basePrice, 0);
 
@@ -36,6 +52,7 @@ const toAuctionPlayer = (player) => {
         basePrice: basePriceLakhs,
         currentBid: basePriceLakhs,
         highestBidder: null,
+        category: getPlayerCategory(player),
         image: player?.profilePicture || player?.image || null,
         isClosed: false,
         status: 'OPEN',
@@ -45,18 +62,22 @@ const toAuctionPlayer = (player) => {
 
 export const AuctionProvider = ({ children }) => {
     const [playerPool, setPlayerPool] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('ALL');
     const [activePlayerIndex, setActivePlayerIndex] = useState(0);
     const [teams, setTeams] = useState(initialTeams.map((team) => ({
         ...team,
         roster: team.roster || []
     })));
-    const [currentPlayer, setCurrentPlayer] = useState(null);
     const [highestBidder, setHighestBidder] = useState(null);
     const [bidHistory, setBidHistory] = useState([]);
     const [auctionLogs, setAuctionLogs] = useState([]);
     const [, setHistoryVersion] = useState(0);
     const undoStackRef = useRef([]);
     const redoStackRef = useRef([]);
+
+    // Compute currentPlayer dynamically from playerPool and activePlayerIndex
+    // This ensures the player card always displays the latest player data including any updates
+    const currentPlayer = playerPool[activePlayerIndex] ? toAuctionPlayer(playerPool[activePlayerIndex]) : null;
 
     useEffect(() => {
         let ignore = false;
@@ -72,15 +93,21 @@ export const AuctionProvider = ({ children }) => {
                 const data = await response.json();
                 if (!Array.isArray(data) || ignore) return;
 
+                const categories = getAvailableCategories(data);
+                const initialCategory = categories[0] || 'ALL';
+                const firstCategoryIndex = data.findIndex((player) =>
+                    playerMatchesCategory(player, initialCategory)
+                );
+
                 setPlayerPool(data);
-                setActivePlayerIndex(0);
-                setCurrentPlayer(data[0] ? toAuctionPlayer(data[0]) : null);
+                setSelectedCategory(initialCategory);
+                setActivePlayerIndex(firstCategoryIndex >= 0 ? firstCategoryIndex : 0);
                 setHighestBidder(null);
                 setBidHistory([]);
             } catch (error) {
                 console.error('Unable to load players from database.', error);
                 setPlayerPool([]);
-                setCurrentPlayer(null);
+                setSelectedCategory('ALL');
             }
         };
 
@@ -95,6 +122,7 @@ export const AuctionProvider = ({ children }) => {
 
     const getSnapshot = () => cloneState({
         playerPool,
+        selectedCategory,
         activePlayerIndex,
         teams,
         currentPlayer,
@@ -106,9 +134,9 @@ export const AuctionProvider = ({ children }) => {
     const applySnapshot = (snapshot) => {
         if (!snapshot) return;
         setPlayerPool(snapshot.playerPool || []);
+        setSelectedCategory(snapshot.selectedCategory || 'ALL');
         setActivePlayerIndex(snapshot.activePlayerIndex ?? 0);
         setTeams(snapshot.teams || []);
-        setCurrentPlayer(snapshot.currentPlayer || null);
         setHighestBidder(snapshot.highestBidder ?? null);
         setBidHistory(snapshot.bidHistory || []);
         setAuctionLogs(snapshot.auctionLogs || []);
@@ -127,6 +155,11 @@ export const AuctionProvider = ({ children }) => {
     const getTeamById = (teamId) => teams.find((team) => team.id === teamId);
     const getFundsInCr = (funds) => parseFloat((funds || '0').replace(' Cr', '')) || 0;
     const toFundsLabel = (valueInCr) => `${Math.max(valueInCr, 0).toFixed(2)} Cr`;
+    const availableCategories = getAvailableCategories(playerPool);
+    const categoriesWithFallback = availableCategories.length > 0 ? availableCategories : ['ALL'];
+    const categoryPlayers = playerPool
+        .filter((player) => playerMatchesCategory(player, selectedCategory))
+        .map((player) => toAuctionPlayer(player));
 
     const placeBid = (teamId, amount) => {
         if (!currentPlayer) return false;
@@ -145,10 +178,17 @@ export const AuctionProvider = ({ children }) => {
         }
 
         runWithHistory(() => {
-            setCurrentPlayer(prev => ({
-                ...prev,
-                currentBid: amount
-            }));
+            // Update the current player in playerPool with the new bid amount
+            setPlayerPool(prevPool => {
+                const updatedPool = [...prevPool];
+                if (updatedPool[activePlayerIndex]) {
+                    updatedPool[activePlayerIndex] = {
+                        ...updatedPool[activePlayerIndex],
+                        currentBid: amount
+                    };
+                }
+                return updatedPool;
+            });
             setHighestBidder(teamId);
             setBidHistory(prev => [...prev, { teamId, amount, timestamp: new Date() }]);
         });
@@ -228,12 +268,19 @@ export const AuctionProvider = ({ children }) => {
                 timestamp: new Date().toISOString()
             }, ...prev]);
 
-            setCurrentPlayer((prev) => ({
-                ...prev,
-                status: 'SOLD',
-                isClosed: true,
-                assignedCard: assignedCard || null
-            }));
+            // Update the current player in playerPool with sold status
+            setPlayerPool(prevPool => {
+                const updatedPool = [...prevPool];
+                if (updatedPool[activePlayerIndex]) {
+                    updatedPool[activePlayerIndex] = {
+                        ...updatedPool[activePlayerIndex],
+                        status: 'SOLD',
+                        isClosed: true,
+                        assignedCard: assignedCard || null
+                    };
+                }
+                return updatedPool;
+            });
             setHighestBidder(null);
             setBidHistory([]);
         });
@@ -267,15 +314,53 @@ export const AuctionProvider = ({ children }) => {
                 timestamp: new Date().toISOString()
             }, ...prev]);
 
-            setCurrentPlayer((prev) => ({
-                ...prev,
-                status: 'UNSOLD',
-                isClosed: true,
-                assignedCard: null
-            }));
+            // Update the current player in playerPool with unsold status
+            setPlayerPool(prevPool => {
+                const updatedPool = [...prevPool];
+                if (updatedPool[activePlayerIndex]) {
+                    updatedPool[activePlayerIndex] = {
+                        ...updatedPool[activePlayerIndex],
+                        status: 'UNSOLD',
+                        isClosed: true,
+                        assignedCard: null
+                    };
+                }
+                return updatedPool;
+            });
             setHighestBidder(null);
             setBidHistory([]);
         });
+        return true;
+    };
+
+    const setActiveCategory = (category, options = {}) => {
+        const nextCategory = categoriesWithFallback.includes(category) ? category : 'ALL';
+        const nextCategoryIndices = playerPool
+            .map((player, index) => (playerMatchesCategory(player, nextCategory) ? index : -1))
+            .filter((index) => index !== -1);
+
+        const applyCategory = () => {
+            setSelectedCategory(nextCategory);
+
+            if (nextCategoryIndices.length === 0) {
+                setActivePlayerIndex(0);
+                setHighestBidder(null);
+                setBidHistory([]);
+                return;
+            }
+
+            const firstIndex = nextCategoryIndices[0];
+            setActivePlayerIndex(firstIndex);
+            setHighestBidder(null);
+            setBidHistory([]);
+        };
+
+        if (options.withHistory) {
+            runWithHistory(applyCategory);
+        } else {
+            applyCategory();
+        }
+
         return true;
     };
 
@@ -283,16 +368,26 @@ export const AuctionProvider = ({ children }) => {
         let newPlayer;
         runWithHistory(() => {
             if (playerPool.length === 0) {
-                setCurrentPlayer(null);
                 setHighestBidder(null);
                 setBidHistory([]);
                 return;
             }
 
-            const nextIndex = (activePlayerIndex + 1) % playerPool.length;
+            const categoryIndices = playerPool
+                .map((player, index) => (playerMatchesCategory(player, selectedCategory) ? index : -1))
+                .filter((index) => index !== -1);
+
+            if (categoryIndices.length === 0) {
+                setHighestBidder(null);
+                setBidHistory([]);
+                return;
+            }
+
+            const currentPosition = categoryIndices.indexOf(activePlayerIndex);
+            const nextPosition = currentPosition === -1 ? 0 : (currentPosition + 1) % categoryIndices.length;
+            const nextIndex = categoryIndices[nextPosition];
             newPlayer = toAuctionPlayer(playerPool[nextIndex]);
             setActivePlayerIndex(nextIndex);
-            setCurrentPlayer(newPlayer);
             setHighestBidder(null);
             setBidHistory([]);
         });
@@ -329,12 +424,39 @@ export const AuctionProvider = ({ children }) => {
         return true;
     };
 
+    const refreshPlayerData = async () => {
+        try {
+            const apiBaseUrl = resolveSocketUrl();
+            const response = await fetch(`${apiBaseUrl}/api/players`);
+            if (!response.ok) {
+                console.error('Failed to refresh player data');
+                return false;
+            }
+
+            const updatedPlayers = await response.json();
+            if (!Array.isArray(updatedPlayers)) {
+                return false;
+            }
+
+            // Update the player pool with latest data from server
+            // This preserves auction state while updating player properties
+            setPlayerPool(updatedPlayers);
+            return true;
+        } catch (error) {
+            console.error('Error refreshing player data:', error);
+            return false;
+        }
+    };
+
     const getAuctionSnapshot = () => getSnapshot();
 
     return (
         <AuctionContext.Provider value={{
             teams,
             currentPlayer,
+            selectedCategory,
+            availableCategories: categoriesWithFallback,
+            categoryPlayers,
             highestBidder,
             bidHistory,
             auctionLogs,
@@ -342,10 +464,12 @@ export const AuctionProvider = ({ children }) => {
             sellPlayer,
             markUnsold,
             nextPlayer,
+            setActiveCategory,
             undoLastAction,
             redoLastAction,
             syncAuctionState,
             getAuctionSnapshot,
+            refreshPlayerData,
             canUndo: undoStackRef.current.length > 0,
             canRedo: redoStackRef.current.length > 0
         }}>
