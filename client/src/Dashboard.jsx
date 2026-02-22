@@ -257,36 +257,47 @@ const Dashboard = () => {
                     </section>
 
                     <div className="projector-main">
-                        <section className="player-details-panel">
-                            <div className="player-image-frame">
-                                {currentPlayer?.image ? (
-                                    <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
-                                ) : (
-                                    <div className="player-image-placeholder-modern">👤</div>
-                                )}
-                            </div>
-                            <div className="player-text-info">
-                                <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
-                                <div className="stats-grid">
-                                    <div className="stat-item">
-                                        <span className="stat-label">Base Price</span>
-                                        <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                        <div className="center-stage-wrapper" style={{ gridColumn: '1', position: 'relative' }}>
+                            <AnimatePresence mode="wait">
+                                <motion.section
+                                    key={currentPlayer?.id || 'none'}
+                                    className="player-details-panel"
+                                    initial={{ opacity: 0, scale: 0.9, y: 50 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -50 }}
+                                    transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 25 }}
+                                >
+                                    <div className="player-image-frame">
+                                        {currentPlayer?.image ? (
+                                            <img src={currentPlayer.image} alt={currentPlayer?.name || 'Player'} />
+                                        ) : (
+                                            <div className="player-image-placeholder-modern">👤</div>
+                                        )}
                                     </div>
-                                    {/* <div className="stat-item">
-                                        <span className="stat-label">Country</span>
-                                        <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
-                                    </div> */}
-                                    <div className="stat-item">
-                                        <span className="stat-label">Role</span>
-                                        <span className="stat-value">{(currentPlayer?.category || '—').toUpperCase()}</span>
+                                    <div className="player-text-info">
+                                        <h1>{(currentPlayer?.name || 'No Active Player').toUpperCase()}</h1>
+                                        <div className="stats-grid">
+                                            <div className="stat-item">
+                                                <span className="stat-label">Base Price</span>
+                                                <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
+                                            </div>
+                                            <div className="stat-item">
+                                                <span className="stat-label">Country</span>
+                                                <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
+                                            </div>
+                                            <div className="stat-item">
+                                                <span className="stat-label">Role</span>
+                                                <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
+                                            </div>
+                                            <div className="stat-item">
+                                                <span className="stat-label">Player Rating</span>
+                                                <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Player Rating</span>
-                                        <span className="stat-value">{currentPlayer?.rating || '9.5/10'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+                                </motion.section>
+                            </AnimatePresence>
+                        </div>
 
                         <section className="bid-details-panel">
                             <div className="bid-box current-bid-box">
