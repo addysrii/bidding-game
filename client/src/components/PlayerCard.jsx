@@ -36,24 +36,12 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
 
                     <div className="player-stats">
                         <div className="stat-box">
-                            <span className="label">Role</span>
-                            <span className="value">{player.role}</span>
+                            <span className="label">Category</span>
+                            <span className="value">{player.category}</span>
                         </div>
                         <div className="stat-box">
-                            <span className="label">Runs</span>
-                            <span className="value">{player.runs}</span>
-                        </div>
-                        <div className="stat-box">
-                            <span className="label">Wickets</span>
-                            <span className="value">{player.wickets}</span>
-                        </div>
-                        <div className="stat-box">
-                            <span className="label">Avg</span>
-                            <span className="value">{player.average}</span>
-                        </div>
-                        <div className="stat-box">
-                            <span className="label">SR</span>
-                            <span className="value">{player.strikeRate}</span>
+                            <span className="label">Rating</span>
+                            <span className="value">{player.rating}</span>
                         </div>
                     </div>
                 </div>
