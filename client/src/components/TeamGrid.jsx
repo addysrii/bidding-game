@@ -49,11 +49,15 @@ const TeamGrid = ({ teams, onTeamClick, title = "OTHER TEAMS", hidePurse = false
                         <div className="squad-list-mini">
                             {team.roster && team.roster.length > 0 ? (
                                 <div className="roster-pills">
-                                    {team.roster.map((player, idx) => (
-                                        <span key={idx} className="player-pill">
-                                            {player.name.split(' ').pop()}
-                                        </span>
-                                    ))}
+                                    {team.roster.map((player, idx) => {
+                                        const fullName = String(player?.name || 'Unknown Player').trim();
+                                        const shortName = fullName.split(' ').pop() || fullName;
+                                        return (
+                                            <span key={player?.id || player?._id || idx} className="player-pill">
+                                                {shortName}
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="empty-squad-text">No players yet</div>

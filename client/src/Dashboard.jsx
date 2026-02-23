@@ -10,16 +10,37 @@ import { motion, AnimatePresence } from 'framer-motion';
 const SOCKET_URL = resolveSocketUrl();
 
 const Dashboard = () => {
+
+    function formatCategory(category) {
+        if (!category) return '—';
+        const c = String(category).trim();
+        const bats = ['Star_Indian_Batter', 'Foreign_Batters', 'Normal_Indian_Batters'];
+        const bowlers = ['Indian_Fast_Bowlers', 'Foreign_Fast_Bowlers', 'Indian_Spinners', 'Foreign_Spinners'];
+        const allround = ['All_Rounders_Indian', 'Foreign_All_Rounders'];
+        const keepers = ['Indian_Wicketkeepers', 'Foreign_Wicket_Keepers'];
+
+        if (bats.includes(c)) return 'BATSMEN';
+        if (bowlers.includes(c)) return 'BOWLER';
+        if (allround.includes(c)) return 'ALL-ROUNDER';
+        if (keepers.includes(c)) return 'WICKET-KEEPER';
+
+        return c.toUpperCase();
+    }
+
     const {
         teams,
         currentPlayer,
         selectedCategory,
         categoryPlayers,
+        auctionSummary,
         highestBidder,
         placeBid,
         sellPlayer,
         markUnsold,
+        redoSoldToUnsold,
         nextPlayer,
+        previousPlayer,
+        resetAuction,
         setActiveCategory,
         undoLastAction,
         redoLastAction,
@@ -54,14 +75,17 @@ const Dashboard = () => {
             placeBid,
             sellPlayer,
             markUnsold,
+            redoSoldToUnsold,
             nextPlayer,
+            previousPlayer,
+            resetAuction,
             setActiveCategory,
             undoLastAction,
             redoLastAction,
             syncAuctionState,
             refreshPlayerData
         };
-    }, [placeBid, sellPlayer, markUnsold, nextPlayer, setActiveCategory, undoLastAction, redoLastAction, syncAuctionState, refreshPlayerData]);
+    }, [placeBid, sellPlayer, markUnsold, redoSoldToUnsold, nextPlayer, previousPlayer, resetAuction, setActiveCategory, undoLastAction, redoLastAction, syncAuctionState, refreshPlayerData]);
 
     useEffect(() => {
         if (!breakEndsAt) {
@@ -132,13 +156,14 @@ const Dashboard = () => {
             const actions = auctionActionsRef.current;
 
             if (event.type === 'BID' && event.teamId && Number.isFinite(Number(event.bidAmount))) {
-                actions.placeBid?.(event.teamId, Number(event.bidAmount));
+                actions.placeBid?.(event.teamId, Number(event.bidAmount), { persist: false });
             }
             if (event.type === 'SOLD') {
                 actions.sellPlayer?.({
                     adminName: event.adminName || 'Admin',
                     assignedCard: event.assignedCard || null,
-                    player: event.player || null
+                    player: event.player || null,
+                    persist: false
                 });
                 showActionAnimation(
                     'SOLD',
@@ -146,14 +171,24 @@ const Dashboard = () => {
                 );
             }
             if (event.type === 'UNSOLD') {
-                actions.markUnsold?.({ adminName: event.adminName || 'Admin' });
+                actions.markUnsold?.({ adminName: event.adminName || 'Admin', persist: false });
                 showActionAnimation(
                     'UNSOLD',
                     `UNSOLD: ${(event.playerName || 'PLAYER').toUpperCase()}`
                 );
             }
+            if (event.type === 'REDO_SOLD_TO_UNSOLD') {
+                actions.redoSoldToUnsold?.({ adminName: event.adminName || 'Admin', persist: false });
+                showActionAnimation(
+                    'UNSOLD',
+                    `REOPENED: ${(event.playerName || 'PLAYER').toUpperCase()}`
+                );
+            }
             if (event.type === 'NEXT_PLAYER') {
                 actions.nextPlayer?.();
+            }
+            if (event.type === 'PREVIOUS_PLAYER') {
+                actions.previousPlayer?.();
             }
             if (event.type === 'UNDO') {
                 if (event.stateSnapshot) {
@@ -179,6 +214,14 @@ const Dashboard = () => {
             if (event.type === 'CATEGORY_CHANGED' && event.category) {
                 actions.setActiveCategory?.(event.category);
             }
+            if (event.type === 'RESET_AUCTION') {
+                if (event.stateSnapshot) {
+                    actions.syncAuctionState?.(event.stateSnapshot);
+                } else {
+                    actions.resetAuction?.();
+                }
+                refreshPlayerData?.();
+            }
             // Refresh players when admin updates player data
             if (event.type === 'PLAYER_UPDATED' || event.type === 'PLAYER_CHANGED') {
                 refreshPlayerData?.();
@@ -201,7 +244,7 @@ const Dashboard = () => {
         if (!basePrice) return '₹ 0.00 CR';
         const match = String(basePrice).match(/([0-9.]+)/);
         const valueLakhs = match ? Number(match[1]) : 0;
-        return `₹ ${(valueLakhs / 100).toFixed(2)} CR`;
+        return `₹ ${(valueLakhs/100).toFixed(2)} CR`;
     };
 
     return (
@@ -237,7 +280,7 @@ const Dashboard = () => {
                     <section className="dashboard-category-strip">
                         <div className="dashboard-category-head">
                             <span className="dashboard-category-title">
-                                {selectedCategory} PLAYERS ({categoryPlayers.length})
+                                {selectedCategory} PLAYERS ({auctionSummary.total}) | SOLD: {auctionSummary.sold} | UNSOLD: {auctionSummary.unsold} | OPEN: {auctionSummary.open}
                             </span>
                         </div>
                         <div className="dashboard-category-list">
@@ -287,7 +330,7 @@ const Dashboard = () => {
                                             </div> */}
                                             <div className="stat-item">
                                                 <span className="stat-label">Role</span>
-                                                <span className="stat-value">{(currentPlayer?.category || '—').toUpperCase()}</span>
+                                                <span className="stat-value">{formatCategory(currentPlayer.category)}</span>
                                             </div>
                                             <div className="stat-item">
                                                 <span className="stat-label">Player Rating</span>

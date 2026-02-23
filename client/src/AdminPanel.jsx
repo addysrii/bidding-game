@@ -12,6 +12,7 @@ import { resolveSocketUrl } from './socketUrl';
 const ADMIN_NAME = 'Admin-1';
 const SOCKET_URL = resolveSocketUrl();
 const DEFAULT_BREAK_SECONDS = 300;
+const PLAYER_NAME_CACHE_KEY = 'admin_player_name_cache_v1';
 
 const getTeamCardOptions = (team) => {
     if (!team) return [];
@@ -53,12 +54,17 @@ const AdminPanel = () => {
         selectedCategory,
         availableCategories,
         categoryPlayers,
+        auctionSummary,
         highestBidder,
         auctionLogs,
         placeBid,
         sellPlayer,
         markUnsold,
+        redoSoldToUnsold,
+        refreshPlayerData,
         nextPlayer,
+        previousPlayer,
+        resetAuction,
         setActiveCategory,
         undoLastAction,
         redoLastAction,
@@ -74,6 +80,7 @@ const AdminPanel = () => {
     const [lastDashboardEvent, setLastDashboardEvent] = useState('No dashboard events yet');
     const [breakEndsAt, setBreakEndsAt] = useState(null);
     const [breakSecondsLeft, setBreakSecondsLeft] = useState(0);
+    const [playerNameCache, setPlayerNameCache] = useState({});
     const socketRef = useRef(null);
 
     const winningTeam = teams.find((team) => team.id === highestBidder) || null;
@@ -86,9 +93,45 @@ const AdminPanel = () => {
     const walletBefore = parseFloat((winningTeam?.funds || '0').replace(' Cr', '')) || 0;
     const bidInCr = (currentPlayer?.currentBid || 0) / 100;
     const hasInsufficientWallet = winningTeam ? walletBefore < bidInCr : false;
-    const isPlayerLocked = currentPlayer?.isClosed;
-    const isSold = currentPlayer?.status === 'SOLD';
+    const currentSoldStatus = String(currentPlayer?.soldStatus || currentPlayer?.status || 'OPEN').toUpperCase();
+    const isPlayerLocked = currentSoldStatus !== 'OPEN';
+    const isSold = currentSoldStatus === 'SOLD';
+    const canReopenPlayer = currentSoldStatus === 'SOLD' || currentSoldStatus === 'UNSOLD';
     const isBreakActive = breakSecondsLeft > 0;
+
+    useEffect(() => {
+        try {
+            const saved = window.localStorage.getItem(PLAYER_NAME_CACHE_KEY);
+            if (!saved) return;
+            const parsed = JSON.parse(saved);
+            if (parsed && typeof parsed === 'object') {
+                setPlayerNameCache(parsed);
+            }
+        } catch (error) {
+            console.error('Failed to load cached player names.', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        setPlayerNameCache((prev) => {
+            const next = { ...prev };
+            let changed = false;
+
+            categoryPlayers.forEach((player) => {
+                if (!player?.id) return;
+                if (!next[player.id] && player?.name) {
+                    next[player.id] = player.name;
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                window.localStorage.setItem(PLAYER_NAME_CACHE_KEY, JSON.stringify(next));
+                return next;
+            }
+            return prev;
+        });
+    }, [categoryPlayers]);
 
     useEffect(() => {
         document.documentElement.classList.add('admin-page');
@@ -144,9 +187,37 @@ const AdminPanel = () => {
         return () => clearInterval(timerId);
     }, [breakEndsAt]);
 
+    const parsePriceToLakhs = (value) => {
+        if (value == null) return NaN;
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+            const s = value.trim().toUpperCase();
+            // e.g. "50 L", "1 CR", "0.5 CR"
+            if (s.endsWith('L')) {
+                const n = parseFloat(s.replace(/[^0-9.\-]/g, ''));
+                return Number.isFinite(n) ? n : NaN;
+            }
+            if (s.endsWith('CR') || s.endsWith('CR.')) {
+                const n = parseFloat(s.replace(/[^0-9.\-]/g, ''));
+                return Number.isFinite(n) ? n * 100 : NaN;
+            }
+            // Fallback: try number parse
+            const n = parseFloat(s.replace(/[^0-9.\-]/g, ''));
+            return Number.isFinite(n) ? n : NaN;
+        }
+        return NaN;
+    };
+
     const getBidIncrement = (bid) => {
-        if (bid >= 1000) return 100;
-        if (bid >= 200) return 50;
+        // bid is expected in lakhs (L). Prefer bid-driven increments.
+        const b = Number(bid || 0);
+        if (Number.isFinite(b)) {
+            if (b >= 1000) return 100; // 10 Cr+
+            if (b >= 200) return 50;   // 2 Cr+
+            if (b >= 100) return 10;   // 1 Cr - 2 Cr
+            if (b >= 80) return 5;     // 80L - 1 Cr
+        }
+        // Fallback default
         return 20;
     };
 
@@ -215,6 +286,10 @@ const AdminPanel = () => {
                 );
                 return;
             }
+            if (result.reason === 'TEAM_FULL') {
+                setSellError(`${winningTeam?.name || 'Selected team'} already has 6 players. Team limit reached.`);
+                return;
+            }
             setSellError('Could not finalize this sale.');
             return;
         }
@@ -234,9 +309,43 @@ const AdminPanel = () => {
         emitAdminEvent('UNSOLD', { playerName: currentPlayer?.name });
     };
 
+    const handleRedoSoldToUnsold = () => {
+        if (!canReopenPlayer) return;
+        const changed = redoSoldToUnsold({ adminName: ADMIN_NAME });
+        if (!changed) return;
+        emitAdminEvent('REDO_SOLD_TO_UNSOLD', { playerName: currentPlayer?.name, soldStatus: 'OPEN' });
+        refreshPlayerData?.();
+    };
+
     const handleNextPlayer = () => {
         const newPlayer = nextPlayer();
         emitAdminEvent('NEXT_PLAYER', { player: newPlayer });
+    };
+
+    const handlePreviousPlayer = () => {
+        const newPlayer = previousPlayer();
+        emitAdminEvent('PREVIOUS_PLAYER', { player: newPlayer });
+    };
+
+    const handleResetAuction = async () => {
+        const shouldReset = window.confirm('Reset all auction data? This will clear sold status, bids, logs and team rosters.');
+        if (!shouldReset) return;
+
+        const result = await resetAuction();
+        if (!result?.success) {
+            window.alert('Failed to reset auction data.');
+            return;
+        }
+
+        setSelectedTeam(null);
+        setShowSellModal(false);
+        setSellError('');
+        setPlayerNameCache({});
+        window.localStorage.removeItem(PLAYER_NAME_CACHE_KEY);
+
+        emitAdminEvent('RESET_AUCTION', {
+            stateSnapshot: result.snapshot || null
+        });
     };
 
     const handleUndo = () => {
@@ -309,6 +418,9 @@ const AdminPanel = () => {
                     >
                         {isBreakActive ? `END BREAK ${formatTimer(breakSecondsLeft)}` : 'START BREAK'}
                     </button>
+                    <button className="control-btn prev-btn" onClick={handlePreviousPlayer}>
+                        PREVIOUS PLAYER
+                    </button>
                     <button className="control-btn next-btn" onClick={handleNextPlayer}>
                         NEXT PLAYER
                     </button>
@@ -347,24 +459,36 @@ const AdminPanel = () => {
                             >
                                 UNSOLD
                             </button>
+                            <button
+                                className="control-btn redo-unsold-btn"
+                                onClick={handleRedoSoldToUnsold}
+                                disabled={!canReopenPlayer}
+                            >
+                                REOPEN PLAYER
+                            </button>
                         </div>
 
                         <div className="category-player-strip">
                             <div className="category-player-strip__title">
-                                {selectedCategory} Players ({categoryPlayers.length})
+                                {selectedCategory} Players ({auctionSummary.total}) | Sold: {auctionSummary.sold} | Unsold: {auctionSummary.unsold} | Open: {auctionSummary.open}
                             </div>
                             <div className="category-player-strip__list">
                                 {categoryPlayers.length === 0 ? (
                                     <span className="category-player-chip empty">No players in this category.</span>
                                 ) : (
-                                    categoryPlayers.map((player) => (
-                                        <span
-                                            key={player.id}
-                                            className={`category-player-chip ${currentPlayer?.id === player.id ? 'active' : ''}`}
-                                        >
-                                            {player.name}
-                                        </span>
-                                    ))
+                                    categoryPlayers.map((player) => {
+                                        const soldStatus = String(player?.soldStatus || player?.status || 'OPEN').toUpperCase();
+                                        const playerName = playerNameCache[player.id] || player.name;
+                                        return (
+                                            <span
+                                                key={player.id}
+                                                className={`category-player-chip status-${soldStatus.toLowerCase()} ${currentPlayer?.id === player.id ? 'active' : ''}`}
+                                            >
+                                                <span>{playerName}</span>
+                                                <span className="category-player-chip__status">{soldStatus}</span>
+                                            </span>
+                                        );
+                                    })
                                 )}
                             </div>
                         </div>
@@ -481,6 +605,12 @@ const AdminPanel = () => {
                         })}
                     </div>
                 </div>
+            </div>
+
+            <div className="admin-footer-actions">
+                <button className="control-btn reset-btn" onClick={handleResetAuction}>
+                    RESET AUCTION DATA
+                </button>
             </div>
 
             <AnimatePresence>

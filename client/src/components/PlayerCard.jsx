@@ -4,6 +4,47 @@ import { motion } from 'framer-motion';
 const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin, cardTheme }) => {
     if (!player) return null;
 
+    const parsePriceToLakhs = (value) => {
+        if (value == null) return NaN;
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+            const s = value.trim().toUpperCase();
+            if (s.endsWith('L')) {
+                const n = parseFloat(s.replace(/[^0-9.\-]/g, ''));
+                return Number.isFinite(n) ? n : NaN;
+            }
+            if (s.endsWith('CR') || s.endsWith('CR.')) {
+                const n = parseFloat(s.replace(/[^0-9.\-]/g, ''));
+                return Number.isFinite(n) ? n * 100 : NaN;
+            }
+            const n = parseFloat(s.replace(/[^0-9.\-]/g, ''));
+            return Number.isFinite(n) ? n : NaN;
+        }
+        return NaN;
+    };
+
+    const getIncrementForPlayer = () => {
+        // Prefer current bid-driven increment (currentBid is in lakhs)
+        const cb = parsePriceToLakhs(currentBid);
+        if (Number.isFinite(cb)) {
+            if (cb >= 1000) return 100;
+            if (cb >= 200) return 50;
+            if (cb >= 100) return 10;
+            if (cb >= 80) return 5;
+        }
+
+        // Fallback to player's base price if no current bid
+        const baseL = parsePriceToLakhs(player?.basePrice);
+        if (Number.isFinite(baseL)) {
+            if (baseL >= 80 && baseL <= 100) return 5;
+            if (baseL > 100 && baseL <= 200) return 10;
+            if (baseL > 200) return 50;
+        }
+
+        return 20; // default
+    };
+    const incrementL = getIncrementForPlayer();
+
     return (
         <motion.div
             className="player-card"
@@ -50,7 +91,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
             <div className="auction-status">
                 <div className="stat-box">
                     <span className="label">Base Price</span>
-                    <span className="value">{player.basePrice}</span>
+                    <span className="value">{(player.basePrice/100)} CR</span>
                 </div>
 
                 <div className="current-bid">
@@ -61,7 +102,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
                         initial={{ scale: 1.5, color: '#fff' }}
                         animate={{ scale: 1, color: '#22c55e' }}
                     >
-                        {currentBid} L
+                        {currentBid/100} CR
                     </motion.div>
                 </div>
 
@@ -86,7 +127,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
                             whileTap={{ scale: 0.95 }}
                             onClick={onBid}
                         >
-                            BID (+20L)
+                            {`BID (+${incrementL}L)`}
                         </motion.button>
                     </>
                 )}
