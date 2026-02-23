@@ -37,6 +37,7 @@ const playerMatchesCategory = (player, category) => {
 
 const toAuctionPlayer = (player) => {
     const basePriceLakhs = parseLakhs(player?.basePrice, 0);
+    const currentBidLakhs = parseLakhs(player?.currentBid, basePriceLakhs);
 
     return {
         id: player?._id || player?.id,
@@ -50,13 +51,13 @@ const toAuctionPlayer = (player) => {
         strikeRate: player?.strikeRate ?? 0,
         rating: player?.rating ?? 'N/A',
         basePrice: basePriceLakhs,
-        currentBid: basePriceLakhs,
-        highestBidder: null,
+        currentBid: currentBidLakhs,
+        highestBidder: player?.highestBidder ?? null,
         category: getPlayerCategory(player),
         image: player?.profilePicture || player?.image || null,
-        isClosed: false,
-        status: 'OPEN',
-        assignedCard: null
+        isClosed: Boolean(player?.isClosed),
+        status: player?.status || 'OPEN',
+        assignedCard: player?.assignedCard || null
     };
 };
 
@@ -438,9 +439,29 @@ export const AuctionProvider = ({ children }) => {
                 return false;
             }
 
-            // Update the player pool with latest data from server
-            // This preserves auction state while updating player properties
-            setPlayerPool(updatedPlayers);
+            // Merge latest server player details while preserving local auction state.
+            setPlayerPool((prevPool) => {
+                const prevById = new Map(
+                    prevPool.map((player) => [player?._id || player?.id, player])
+                );
+
+                return updatedPlayers.map((serverPlayer) => {
+                    const playerId = serverPlayer?._id || serverPlayer?.id;
+                    const previous = prevById.get(playerId);
+                    if (!previous) return serverPlayer;
+
+                    return {
+                        ...serverPlayer,
+                        currentBid: previous.currentBid ?? parseLakhs(previous.basePrice, 0),
+                        highestBidder: previous.highestBidder ?? null,
+                        status: previous.status ?? 'OPEN',
+                        isClosed: previous.isClosed ?? false,
+                        assignedCard: previous.assignedCard ?? null,
+                        soldPrice: previous.soldPrice ?? null,
+                        soldTo: previous.soldTo ?? null
+                    };
+                });
+            });
             return true;
         } catch (error) {
             console.error('Error refreshing player data:', error);

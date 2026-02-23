@@ -281,13 +281,13 @@ const Dashboard = () => {
                                                 <span className="stat-label">Base Price</span>
                                                 <span className="stat-value">{formatBasePrice(currentPlayer?.basePrice)}</span>
                                             </div>
-                                            <div className="stat-item">
+                                            {/* <div className="stat-item">
                                                 <span className="stat-label">Country</span>
                                                 <span className="stat-value">{(currentPlayer?.country || '—').toUpperCase()}</span>
-                                            </div>
+                                            </div> */}
                                             <div className="stat-item">
                                                 <span className="stat-label">Role</span>
-                                                <span className="stat-value">{(currentPlayer?.role || '—').toUpperCase()}</span>
+                                                <span className="stat-value">{(currentPlayer?.category || '—').toUpperCase()}</span>
                                             </div>
                                             <div className="stat-item">
                                                 <span className="stat-label">Player Rating</span>
