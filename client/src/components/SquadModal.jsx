@@ -25,10 +25,10 @@ const SquadModal = ({ team, onClose, isMyTeam, isAdmin }) => {
 
     // Calculate role breakdown
     const stats = {
-        batters: team.roster?.filter(p => p.role === 'Batsman').length || 0,
-        bowlers: team.roster?.filter(p => p.role === 'Bowler').length || 0,
-        allRounders: team.roster?.filter(p => p.role === 'All-Rounder').length || 0,
-        wks: team.roster?.filter(p => p.role === 'Wicket Keeper').length || 0,
+        batters: team.roster?.filter(p => p.role === 'BATSMEN').length || 0,
+        bowlers: team.roster?.filter(p => p.role === 'BOWLER').length || 0,
+        allRounders: team.roster?.filter(p => p.role === 'ALL-ROUNDER').length || 0,
+        wks: team.roster?.filter(p => p.role === 'WICKET-KEEPER').length || 0,
     };
 
     const showDetails = isMyTeam || isAdmin;

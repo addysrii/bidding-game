@@ -65,6 +65,22 @@ const getPlayerCategory = (player) => {
     return String(rawCategory).trim() || 'Uncategorized';
 };
 
+const getStandardRole = (category) => {
+    if (!category) return 'BATSMEN';
+    const c = String(category).trim();
+    const bats = ['Star_Indian_Batter', 'Foreign_Batters', 'Normal_Indian_Batters'];
+    const bowlers = ['Indian_Fast_Bowlers', 'Foreign_Fast_Bowlers', 'Indian_Spinners', 'Foreign_Spinners'];
+    const allround = ['All_Rounders_Indian', 'Foreign_All_Rounders'];
+    const keepers = ['Indian_Wicketkeepers', 'Foreign_Wicket_Keepers'];
+
+    if (bats.includes(c)) return 'BATSMEN';
+    if (bowlers.includes(c)) return 'BOWLER';
+    if (allround.includes(c)) return 'ALL-ROUNDER';
+    if (keepers.includes(c)) return 'WICKET-KEEPER';
+
+    return 'BATSMEN'; // Default fallback
+};
+
 const getAvailableCategories = (players = []) => {
     const categories = new Set();
     players.forEach((player) => categories.add(getPlayerCategory(player)));
@@ -87,11 +103,13 @@ const toAuctionPlayer = (player) => {
     const currentBidLakhs = parseLakhs(player?.currentBid, basePriceLakhs);
     const soldStatus = normalizeSoldStatus(player?.soldStatus || player?.status);
 
+    const standardRole = getStandardRole(player?.category);
+
     return {
         id: player?._id || player?.id,
         name: player?.name || 'Unknown Player',
         country: player?.country || 'IND',
-        role: player?.role || 'Batsman',
+        role: standardRole,
         matches: player?.matches ?? 0,
         runs: player?.runs ?? 0,
         wickets: player?.wickets ?? 0,
@@ -341,7 +359,7 @@ export const AuctionProvider = ({ children }) => {
             ...currentPlayer,
             currentBid: bidAmount,
             soldPrice: `${bidAmount} L`,
-            role: currentPlayer.role || 'Batsman',
+            role: currentPlayer.role,
             soldTo: winningTeamId,
             soldStatus: 'SOLD',
             status: 'SOLD',
