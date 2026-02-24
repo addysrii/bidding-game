@@ -16,6 +16,12 @@ const item = {
     show: { opacity: 1, scale: 1 }
 };
 
+const formatTeamPoints = (funds) => {
+    const fundsCr = parseFloat(String(funds || '0').replace(/[^0-9.\-]/g, '')) || 0;
+    const points = Math.round(fundsCr * 100);
+    return `${points.toLocaleString('en-IN')} PTS`;
+};
+
 const TeamGrid = ({ teams, onTeamClick, title = "OTHER TEAMS", hidePurse = false }) => {
     return (
         <div className="team-section">
@@ -41,7 +47,7 @@ const TeamGrid = ({ teams, onTeamClick, title = "OTHER TEAMS", hidePurse = false
                                 <div className="team-name">{team.name}</div>
                             </div>
                             <div className="team-stats-right">
-                                {!hidePurse && <div className="funds-remaining">{team.funds}</div>}
+                                {!hidePurse && <div className="funds-remaining">{formatTeamPoints(team.funds)}</div>}
                                 <div className="player-count-badge">{team.players} Players</div>
                             </div>
                         </div>

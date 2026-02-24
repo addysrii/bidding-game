@@ -63,8 +63,7 @@ const Dashboard = () => {
     const myTeam = teams.find(t => t.id === "MUM") || { funds: "100 Cr", players: 0, roster: [] };
     const highestBidTeam = teams.find((team) => team.id === highestBidder) || null;
 
-    const currentBidLakhs = Number(currentPlayer?.currentBid || 0);
-    const currentBidCr = (currentBidLakhs / 100).toFixed(2);
+    const currentBidPoints = Number(currentPlayer?.currentBid || 0);
 
     useEffect(() => {
         auctionActionsRef.current = {
@@ -112,9 +111,10 @@ const Dashboard = () => {
 
     // Periodic refresh of player data - updates every 3 seconds
     useEffect(() => {
+        refreshPlayerData?.();
         const refreshInterval = setInterval(() => {
             refreshPlayerData?.();
-        });
+        }, 3000);
 
         return () => clearInterval(refreshInterval);
     }, [refreshPlayerData]);
@@ -238,10 +238,10 @@ const Dashboard = () => {
     };
 
     const formatBasePrice = (basePrice) => {
-        if (!basePrice) return '₹ 0.00 CR';
+        if (!basePrice) return '0 PTS';
         const match = String(basePrice).match(/([0-9.]+)/);
-        const valueLakhs = match ? Number(match[1]) : 0;
-        return `₹ ${(valueLakhs/100).toFixed(2)} CR`;
+        const valuePoints = match ? Number(match[1]) : 0;
+        return `${valuePoints.toLocaleString('en-IN')} PTS`;
     };
 
     return (
@@ -342,7 +342,7 @@ const Dashboard = () => {
                         <section className="bid-details-panel">
                             <div className="bid-box current-bid-box">
                                 <span className="box-label">Current Bid</span>
-                                <div className="bid-amount">₹ {currentBidCr} CR</div>
+                                <div className="bid-amount">{currentBidPoints.toLocaleString('en-IN')} PTS</div>
                             </div>
 
                             <div className="bid-box team-box">

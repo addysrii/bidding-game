@@ -11,7 +11,6 @@ export const initSocket = (options = {}) => {
     const isProd = import.meta.env.PROD;
     socketInstance = io(resolveSocketUrl(), {
         transports: ['websocket'],
-        upgrade: !isProd,
         reconnection: true,
         reconnectionAttempts: Infinity,
         // reconnectionDelay:

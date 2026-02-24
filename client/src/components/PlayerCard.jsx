@@ -44,6 +44,8 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
         return 20; // default
     };
     const incrementL = getIncrementForPlayer();
+    const basePoints = Number(player?.basePrice || 0);
+    const currentBidPoints = Number(currentBid || 0);
 
     return (
         <motion.div
@@ -91,7 +93,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
             <div className="auction-status">
                 <div className="stat-box">
                     <span className="label">Base Price</span>
-                    <span className="value">{(player.basePrice/100)} CR</span>
+                    <span className="value">{basePoints.toLocaleString('en-IN')} PTS</span>
                 </div>
 
                 <div className="current-bid">
@@ -102,7 +104,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
                         initial={{ scale: 1.5, color: '#fff' }}
                         animate={{ scale: 1, color: '#22c55e' }}
                     >
-                        {currentBid/100} CR
+                        {currentBidPoints.toLocaleString('en-IN')} PTS
                     </motion.div>
                 </div>
 
@@ -127,7 +129,7 @@ const PlayerCard = ({ player, onBid, onSkip, currentBid, highestBidder, isAdmin,
                             whileTap={{ scale: 0.95 }}
                             onClick={onBid}
                         >
-                            {`BID (+${incrementL}L)`}
+                            {`BID (+${incrementL} PTS)`}
                         </motion.button>
                     </>
                 )}

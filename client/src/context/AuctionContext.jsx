@@ -123,6 +123,7 @@ export const AuctionProvider = ({ children }) => {
     const [, setHistoryVersion] = useState(0);
     const undoStackRef = useRef([]);
     const redoStackRef = useRef([]);
+    const refreshPlayerDataPromiseRef = useRef(null);
 
     // Compute currentPlayer dynamically from playerPool and activePlayerIndex
     // This ensures the player card always displays the latest player data including any updates
@@ -730,48 +731,58 @@ export const AuctionProvider = ({ children }) => {
     };
 
     const refreshPlayerData = async () => {
-        try {
-            const apiBaseUrl = resolveSocketUrl();
-            const response = await fetch(`${apiBaseUrl}/api/players`);
-            if (!response.ok) {
-                console.error('Failed to refresh player data');
-                return false;
-            }
-
-            const updatedPlayers = await response.json();
-            if (!Array.isArray(updatedPlayers)) {
-                return false;
-            }
-
-            // Merge latest server player details while preserving local auction state.
-            setPlayerPool((prevPool) => {
-                const prevById = new Map(
-                    prevPool.map((player) => [player?._id || player?.id, player])
-                );
-
-                return updatedPlayers.map((serverPlayer) => {
-                    const playerId = serverPlayer?._id || serverPlayer?.id;
-                    const previous = prevById.get(playerId);
-                    if (!previous) return serverPlayer;
-
-                    return {
-                        ...serverPlayer,
-                        currentBid: serverPlayer.currentBid ?? previous.currentBid ?? parseLakhs(previous.basePrice, 0),
-                        highestBidder: serverPlayer.highestBidder ?? previous.highestBidder ?? null,
-                        soldStatus: normalizeSoldStatus(serverPlayer.soldStatus ?? previous.soldStatus ?? previous.status),
-                        status: normalizeSoldStatus(serverPlayer.soldStatus ?? previous.soldStatus ?? previous.status),
-                        isClosed: normalizeSoldStatus(serverPlayer.soldStatus ?? previous.soldStatus ?? previous.status) !== 'OPEN',
-                        assignedCard: serverPlayer.assignedCard ?? previous.assignedCard ?? null,
-                        soldPrice: serverPlayer.soldPrice ?? previous.soldPrice ?? null,
-                        soldTo: serverPlayer.soldTo ?? previous.soldTo ?? null
-                    };
-                });
-            });
-            return true;
-        } catch (error) {
-            console.error('Error refreshing player data:', error);
-            return false;
+        if (refreshPlayerDataPromiseRef.current) {
+            return refreshPlayerDataPromiseRef.current;
         }
+
+        refreshPlayerDataPromiseRef.current = (async () => {
+            try {
+                const apiBaseUrl = resolveSocketUrl();
+                const response = await fetch(`${apiBaseUrl}/api/players`);
+                if (!response.ok) {
+                    console.error('Failed to refresh player data');
+                    return false;
+                }
+
+                const updatedPlayers = await response.json();
+                if (!Array.isArray(updatedPlayers)) {
+                    return false;
+                }
+
+                // Merge latest server player details while preserving local auction state.
+                setPlayerPool((prevPool) => {
+                    const prevById = new Map(
+                        prevPool.map((player) => [player?._id || player?.id, player])
+                    );
+
+                    return updatedPlayers.map((serverPlayer) => {
+                        const playerId = serverPlayer?._id || serverPlayer?.id;
+                        const previous = prevById.get(playerId);
+                        if (!previous) return serverPlayer;
+
+                        return {
+                            ...serverPlayer,
+                            currentBid: serverPlayer.currentBid ?? previous.currentBid ?? parseLakhs(previous.basePrice, 0),
+                            highestBidder: serverPlayer.highestBidder ?? previous.highestBidder ?? null,
+                            soldStatus: normalizeSoldStatus(serverPlayer.soldStatus ?? previous.soldStatus ?? previous.status),
+                            status: normalizeSoldStatus(serverPlayer.soldStatus ?? previous.soldStatus ?? previous.status),
+                            isClosed: normalizeSoldStatus(serverPlayer.soldStatus ?? previous.soldStatus ?? previous.status) !== 'OPEN',
+                            assignedCard: serverPlayer.assignedCard ?? previous.assignedCard ?? null,
+                            soldPrice: serverPlayer.soldPrice ?? previous.soldPrice ?? null,
+                            soldTo: serverPlayer.soldTo ?? previous.soldTo ?? null
+                        };
+                    });
+                });
+                return true;
+            } catch (error) {
+                console.error('Error refreshing player data:', error);
+                return false;
+            } finally {
+                refreshPlayerDataPromiseRef.current = null;
+            }
+        })();
+
+        return refreshPlayerDataPromiseRef.current;
     };
 
     const getAuctionSnapshot = () => getSnapshot();

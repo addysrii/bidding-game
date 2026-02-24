@@ -11,6 +11,11 @@ import { getSocket } from './socket';
 const ADMIN_NAME = 'Admin-1';
 const DEFAULT_BREAK_SECONDS = 300;
 const PLAYER_NAME_CACHE_KEY = 'admin_player_name_cache_v1';
+const INITIAL_POINTS = 10000;
+
+const parseFundsCr = (funds) => parseFloat(String(funds || '0').replace(/[^0-9.\-]/g, '')) || 0;
+const toPoints = (valueCr) => Math.round(Number(valueCr || 0) * 100);
+const formatPoints = (value) => `${Number(value || 0).toLocaleString('en-IN')} PTS`;
 
 const getTeamCardOptions = (team) => {
     if (!team) return [];
@@ -88,9 +93,11 @@ const AdminPanel = () => {
         [teamCardOptions, selectedCardId]
     );
 
-    const walletBefore = parseFloat((winningTeam?.funds || '0').replace(' Cr', '')) || 0;
+    const walletBefore = parseFundsCr(winningTeam?.funds);
     const bidInCr = (currentPlayer?.currentBid || 0) / 100;
     const hasInsufficientWallet = winningTeam ? walletBefore < bidInCr : false;
+    const walletBeforePoints = toPoints(walletBefore);
+    const bidPoints = Number(currentPlayer?.currentBid || 0);
     const currentSoldStatus = String(currentPlayer?.soldStatus || currentPlayer?.status || 'OPEN').toUpperCase();
     const isPlayerLocked = currentSoldStatus !== 'OPEN';
     const isSold = currentSoldStatus === 'SOLD';
@@ -291,7 +298,7 @@ const AdminPanel = () => {
         if (!result.success) {
             if (result.reason === 'INSUFFICIENT_FUNDS') {
                 setSellError(
-                    `Insufficient wallet for ${winningTeam?.name}. Required ${bidInCr.toFixed(2)} Cr, available ${walletBefore.toFixed(2)} Cr.`
+                    `Insufficient points for ${winningTeam?.name}. Required ${formatPoints(bidPoints)}, available ${formatPoints(walletBeforePoints)}.`
                 );
                 return;
             }
@@ -533,10 +540,10 @@ const AdminPanel = () => {
                                     <div key={entry.id} className={`admin-log-entry admin-log-entry--${entry.type.toLowerCase()}`}>
                                         <span className="admin-log-player">{entry.playerName}</span>
                                         <span className="admin-log-status">{entry.type}</span>
-                                        <span className="admin-log-price">{entry.soldAmount}</span>
+                                        <span className="admin-log-price">{formatPoints(parseFloat(String(entry.soldAmount || 0).replace(/[^0-9.\-]/g, '')) || 0)}</span>
                                         <span className="admin-log-team">{entry.teamName || '—'}</span>
                                         <span className="admin-log-meta">
-                                            {entry.walletBefore != null ? `${entry.walletBefore.toFixed(2)} Cr -> ${entry.walletAfter.toFixed(2)} Cr` : 'Wallet: —'}
+                                            {entry.walletBefore != null ? `${formatPoints(toPoints(entry.walletBefore))} -> ${formatPoints(toPoints(entry.walletAfter))}` : 'Points: —'}
                                         </span>
                                         <span className="admin-log-meta">Card: {entry.cardAssigned || '—'}</span>
                                         <span className="admin-log-meta">By: {entry.adminName || 'Admin'}</span>
@@ -554,9 +561,9 @@ const AdminPanel = () => {
                     <h2>Team Overview</h2>
                     <div className="teams-with-purse">
                         {teams.map(team => {
-                            const purseNum = parseFloat((team.funds || '0').replace(' Cr', '')) || 0;
-                            const initialPurse = 100;
-                            const pursePercent = initialPurse > 0 ? (purseNum / initialPurse) * 100 : 0;
+                            const purseNum = parseFundsCr(team.funds);
+                            const pursePoints = toPoints(purseNum);
+                            const pursePercent = INITIAL_POINTS > 0 ? (pursePoints / INITIAL_POINTS) * 100 : 0;
                             return (
                                 <div key={team.id} className="team-purse-container">
                                     <div className="team-purse-display">
@@ -565,9 +572,8 @@ const AdminPanel = () => {
                                                 {team.name}
                                             </span>
                                             <div className="purse-amount">
-                                                <span className="currency">₹</span>
-                                                <span className="amount">{purseNum.toLocaleString('en-IN')}</span>
-                                                <span className="label">Cr</span>
+                                                <span className="amount">{pursePoints.toLocaleString('en-IN')}</span>
+                                                <span className="label">PTS</span>
                                             </div>
                                             <div className="purse-bar">
                                                 <div
@@ -663,14 +669,14 @@ const AdminPanel = () => {
                         >
                             <h3>Finalize Sale</h3>
                             <p>
-                                {currentPlayer?.name} to {winningTeam?.name} at {currentPlayer?.currentBid} L
+                                {currentPlayer?.name} to {winningTeam?.name} at {formatPoints(currentPlayer?.currentBid || 0)}
                             </p>
                             <div className="sell-wallet-line">
-                                Wallet: {walletBefore.toFixed(2)} Cr | Required: {bidInCr.toFixed(2)} Cr
+                                Points: {formatPoints(walletBeforePoints)} | Required: {formatPoints(bidPoints)}
                             </div>
                             {hasInsufficientWallet && (
                                 <div className="sell-warning">
-                                    Warning: insufficient wallet balance. Please adjust bidding before marking sold.
+                                    Warning: insufficient points balance. Please adjust bidding before marking sold.
                                 </div>
                             )}
 

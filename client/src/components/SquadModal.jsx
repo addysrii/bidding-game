@@ -15,6 +15,14 @@ const modalVariants = {
 const SquadModal = ({ team, onClose, isMyTeam, isAdmin }) => {
     if (!team) return null;
 
+    const formatSoldPrice = (value) => {
+        if (value == null || value === '') return '—';
+        if (typeof value === 'number') return `${value.toLocaleString('en-IN')} PTS`;
+        const numeric = parseFloat(String(value).replace(/[^0-9.\-]/g, ''));
+        if (!Number.isFinite(numeric)) return '—';
+        return `${numeric.toLocaleString('en-IN')} PTS`;
+    };
+
     // Calculate role breakdown
     const stats = {
         batters: team.roster?.filter(p => p.role === 'Batsman').length || 0,
@@ -80,7 +88,7 @@ const SquadModal = ({ team, onClose, isMyTeam, isAdmin }) => {
                                             <span className="p-name">{player.name}</span>
                                             <span className="p-role">{player.role}</span>
                                             <span className="p-role">{player.assignedCard?.label || 'Default Card'}</span>
-                                            <span className="p-price">{player.soldPrice}</span>
+                                            <span className="p-price">{formatSoldPrice(player.soldPrice)}</span>
                                         </li>
                                     ))}
                                 </ul>
