@@ -14,10 +14,33 @@ export const initSocket = (options = {}) => {
         upgrade: !isProd,
         reconnection: true,
         reconnectionAttempts: Infinity,
-        reconnectionDelay: 1000,
+        // reconnectionDelay:
         reconnectionDelayMax: 5000,
         ...options
     });
+
+    socketInstance.on('connect', () => {
+  console.log('Socket connected:',socketInstance.id);
+});
+
+socketInstance.on('disconnect', (reason) => {
+  console.log('Socket disconnected:', reason);
+});
+
+socketInstance.on('connect_error', (err) => {
+  console.error('Socket error:', err.message);
+});
+socketInstance.on('connect', () => {
+  console.log('Socket connected:', socketInstance.id);
+});
+
+socketInstance.on('disconnect', (reason) => {
+  console.log('Socket disconnected:', reason);
+});
+
+socketInstance.on('connect_error', (err) => {
+  console.error('Socket error:', err.message);
+});
 
     return socketInstance;
 };
