@@ -280,20 +280,7 @@ const Dashboard = () => {
                                 {selectedCategory} PLAYERS ({auctionSummary.total}) | SOLD: {auctionSummary.sold} | UNSOLD: {auctionSummary.unsold} | OPEN: {auctionSummary.open}
                             </span>
                         </div>
-                        <div className="dashboard-category-list">
-                            {categoryPlayers.length === 0 ? (
-                                <span className="dashboard-category-chip empty">No players available</span>
-                            ) : (
-                                categoryPlayers.map((player) => (
-                                    <span
-                                        key={player.id}
-                                        className={`dashboard-category-chip ${player.id === currentPlayer?.id ? 'active' : ''}`}
-                                    >
-                                        {player.name}
-                                    </span>
-                                ))
-                            )}
-                        </div>
+                        
                     </section>
 
                     <div className="projector-main">
