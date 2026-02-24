@@ -7,6 +7,7 @@ import SquadModal from './components/SquadModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Dashboard = () => {
+    const ACTION_OVERLAY_DURATION_MS = 1500;
 
     function formatCategory(category) {
         if (!category) return '—';
@@ -114,7 +115,7 @@ const Dashboard = () => {
         refreshPlayerData?.();
         const refreshInterval = setInterval(() => {
             refreshPlayerData?.();
-        }, 3000);
+        },3000);
 
         return () => clearInterval(refreshInterval);
     }, [refreshPlayerData]);
@@ -126,7 +127,7 @@ const Dashboard = () => {
         setActionOverlay({ type, message });
         overlayTimerRef.current = setTimeout(() => {
             setActionOverlay(null);
-        });
+        }, ACTION_OVERLAY_DURATION_MS);
     };
 
     useEffect(() => {
@@ -329,7 +330,7 @@ const Dashboard = () => {
                         <section className="bid-details-panel">
                             <div className="bid-box current-bid-box">
                                 <span className="box-label">Current Bid</span>
-                                <div className="bid-amount">{currentBidPoints.toLocaleString('en-IN')} PTS</div>
+                                <div className="bid-amount">{currentBidPoints} PTS</div>
                             </div>
 
                             <div className="bid-box team-box">
@@ -350,7 +351,7 @@ const Dashboard = () => {
                 <SquadModal
                     team={selectedTeam}
                     isMyTeam={false}
-                    isAdmin={false}
+                    isAdmin={false}z
                     onClose={() => setSelectedTeam(null)}
                 />
             )}

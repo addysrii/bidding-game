@@ -329,12 +329,12 @@ export const AuctionProvider = ({ children }) => {
         const currentSquadCount = Array.isArray(winningTeam.roster)
             ? winningTeam.roster.length
             : Number(winningTeam.players || 0);
-        if (currentSquadCount >= 5) {
-            return {
-                success: false,
-                reason: 'TEAM_FULL'
-            };
-        }
+        // if (currentSquadCount >= 6) {
+        //     return {
+        //         success: false,
+        //         reason: 'TEAM_FULL'
+        //     };
+        // }
 
         const walletAfter = walletBefore - costInCr;
         const soldPlayer = {

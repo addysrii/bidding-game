@@ -11,7 +11,7 @@ import { getSocket } from './socket';
 const ADMIN_NAME = 'Admin-1';
 const DEFAULT_BREAK_SECONDS = 300;
 const PLAYER_NAME_CACHE_KEY = 'admin_player_name_cache_v1';
-const INITIAL_POINTS = 10000;
+const INITIAL_POINTS = 1000000;
 
 const parseFundsCr = (funds) => parseFloat(String(funds || '0').replace(/[^0-9.\-]/g, '')) || 0;
 const toPoints = (valueCr) => Math.round(Number(valueCr || 0) * 100);
