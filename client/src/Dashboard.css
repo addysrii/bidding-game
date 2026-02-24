@@ -1163,6 +1163,11 @@ body {
   border: 2px solid rgba(239, 68, 68, 0.5);
 }
 
+.dashboard-action-overlay.reopen .dashboard-action-overlay-card {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.95), rgba(30, 58, 138, 0.98));
+  border: 2px solid rgba(59, 130, 246, 0.5);
+}
+
 .overlay-title {
   font-size: 1.5rem;
   text-transform: uppercase;
@@ -1188,6 +1193,13 @@ body {
 }
 
 @keyframes overlayPop {
-  0% { transform: scale(0.6) translateY(40px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  0% {
+    transform: scale(0.6) translateY(40px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }

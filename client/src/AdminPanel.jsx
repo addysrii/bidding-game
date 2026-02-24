@@ -11,7 +11,7 @@ import { getSocket } from './socket';
 const ADMIN_NAME = 'Admin-1';
 const DEFAULT_BREAK_SECONDS = 300;
 const PLAYER_NAME_CACHE_KEY = 'admin_player_name_cache_v1';
-const INITIAL_POINTS = 25000;
+const INITIAL_POINTS = 10000;
 
 const parseFundsCr = (funds) => parseFloat(String(funds || '0').replace(/[^0-9.\-]/g, '')) || 0;
 const toPoints = (valueCr) => Math.round(Number(valueCr || 0) * 100);
@@ -230,7 +230,7 @@ const AdminPanel = () => {
         if (Number.isFinite(b)) {
             if (b >= 1000) return 100; // 10 Cr+
             if (b >= 200) return 50;   // 2 Cr+
-            if (b >= 100) return 10;   // 1 Cr - 2 Cr
+            if (b >= 100) return 20;   // 1 Cr - 2 Cr
             if (b >= 80) return 5;     // 80L - 1 Cr
         }
         // Fallback default
@@ -268,7 +268,7 @@ const AdminPanel = () => {
             bidAmount: nextBidValue,
             player: { ...currentPlayer, currentBid: nextBidValue } // Sync updated bid
         });
-        
+
         // Emit player update event to refresh player data on dashboards
         emitAdminEvent('PLAYER_UPDATED', {
             playerId: currentPlayer?.id,

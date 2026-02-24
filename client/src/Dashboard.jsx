@@ -115,7 +115,7 @@ const Dashboard = () => {
         refreshPlayerData?.();
         const refreshInterval = setInterval(() => {
             refreshPlayerData?.();
-        },3000);
+        }, 3000);
 
         return () => clearInterval(refreshInterval);
     }, [refreshPlayerData]);
@@ -171,7 +171,7 @@ const Dashboard = () => {
             if (event.type === 'REDO_SOLD_TO_UNSOLD') {
                 actions.redoSoldToUnsold?.({ adminName: event.adminName || 'Admin', persist: false });
                 showActionAnimation(
-                    'UNSOLD',
+                    'REOPEN',
                     `REOPENED: ${(event.playerName || 'PLAYER').toUpperCase()}`
                 );
             }
@@ -281,7 +281,7 @@ const Dashboard = () => {
                                 {selectedCategory} PLAYERS ({auctionSummary.total}) | SOLD: {auctionSummary.sold} | UNSOLD: {auctionSummary.unsold} | OPEN: {auctionSummary.open}
                             </span>
                         </div>
-                        
+
                     </section>
 
                     <div className="projector-main">
@@ -351,7 +351,7 @@ const Dashboard = () => {
                 <SquadModal
                     team={selectedTeam}
                     isMyTeam={false}
-                    isAdmin={false}z
+                    isAdmin={false} z
                     onClose={() => setSelectedTeam(null)}
                 />
             )}
@@ -366,7 +366,8 @@ const Dashboard = () => {
                     >
                         <motion.div className="dashboard-action-overlay-card">
                             <div className="overlay-title">
-                                {actionOverlay.type === 'SOLD' ? 'PLAYER SOLD' : 'PLAYER UNSOLD'}
+                                {actionOverlay.type === 'SOLD' ? 'PLAYER SOLD' :
+                                    actionOverlay.type === 'REOPEN' ? 'PLAYER REOPENED' : 'PLAYER UNSOLD'}
                             </div>
                             <div className="overlay-msg">{actionOverlay.message}</div>
                             {actionOverlay.type === 'SOLD' && currentPlayer && (
