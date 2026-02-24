@@ -6,11 +6,9 @@ import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
 import { useAuction } from './context/AuctionContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { io } from 'socket.io-client';
-import { resolveSocketUrl } from './socketUrl';
+import { getSocket } from './socket';
 
 const ADMIN_NAME = 'Admin-1';
-const SOCKET_URL = resolveSocketUrl();
 const DEFAULT_BREAK_SECONDS = 300;
 const PLAYER_NAME_CACHE_KEY = 'admin_player_name_cache_v1';
 
@@ -143,28 +141,39 @@ const AdminPanel = () => {
     }, []);
 
     useEffect(() => {
-        const isProd = import.meta.env.PROD;
-        const socket = io(SOCKET_URL, {
-            transports: isProd ? ['polling'] : ['polling', 'websocket'],
-            upgrade: !isProd
-        });
-
+        const socket = getSocket();
         socketRef.current = socket;
 
-        socket.on('connect', () => setSocketStatus('CONNECTED'));
-        socket.on('disconnect', () => setSocketStatus('DISCONNECTED'));
-        socket.on('connect_error', () => setSocketStatus('ERROR'));
-        socket.on('auction:dashboard-event', (event = {}) => {
+        const onConnect = () => setSocketStatus('CONNECTED');
+        const onDisconnect = () => setSocketStatus('DISCONNECTED');
+        const onConnectError = () => setSocketStatus('ERROR');
+        const onDashboardEvent = (event = {}) => {
             if (!event?.type) return;
             const eventLabel = event.type.replaceAll('_', ' ');
             setLastDashboardEvent(
                 `${eventLabel} | ${event.teamName || event.teamId || 'Dashboard'}`
             );
-        });
+        };
+
+        socket.on('connect', onConnect);
+        socket.on('disconnect', onDisconnect);
+        socket.on('connect_error', onConnectError);
+        socket.on('auction:dashboard-event', onDashboardEvent);
+
+        if (socket.connected) {
+            setSocketStatus('CONNECTED');
+        } else {
+            setSocketStatus('CONNECTING');
+        }
 
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            socket.off('connect', onConnect);
+            socket.off('disconnect', onDisconnect);
+            socket.off('connect_error', onConnectError);
+            socket.off('auction:dashboard-event', onDashboardEvent);
+            if (socketRef.current === socket) {
+                socketRef.current = null;
+            }
         };
     }, []);
 

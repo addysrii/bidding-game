@@ -7,8 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('server:server');
 var http = require('http');
-var { Server } = require('socket.io');
 var connectDB = require('../config/db');
+var socketManager = require('../socket');
 
 /**
  * Get port from environment and store in Express.
@@ -22,12 +22,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-var io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
+var io = socketManager.init(server);
 
 io.on('connection', (socket) => {
   console.log('socket connected:', socket.id);
@@ -38,7 +33,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('admin:auction-event', (payload = {}) => {
-    io.emit('auction:admin-event', {
+    socketManager.getIO().emit('auction:admin-event', {
       ...payload,
       sourceSocketId: socket.id,
       receivedAt: new Date().toISOString()
@@ -46,7 +41,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('dashboard:auction-event', (payload = {}) => {
-    io.emit('auction:dashboard-event', {
+    socketManager.getIO().emit('auction:dashboard-event', {
       ...payload,
       sourceSocketId: socket.id,
       receivedAt: new Date().toISOString()

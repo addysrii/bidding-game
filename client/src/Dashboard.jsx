@@ -1,13 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Dashboard.css';
 import { useAuction } from './context/AuctionContext';
-import { io } from 'socket.io-client';
-import { resolveSocketUrl } from './socketUrl';
+import { getSocket } from './socket';
 import TeamGrid from './components/TeamGrid';
 import SquadModal from './components/SquadModal';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const SOCKET_URL = resolveSocketUrl();
 
 const Dashboard = () => {
 
@@ -54,7 +51,6 @@ const Dashboard = () => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [notification, setNotification] = useState(null);
     const teamsSectionRef = useRef(null);
-    const socketRef = useRef(null);
     const auctionActionsRef = useRef({});
     const overlayTimerRef = useRef(null);
     const [actionOverlay, setActionOverlay] = useState(null);
@@ -118,7 +114,7 @@ const Dashboard = () => {
     useEffect(() => {
         const refreshInterval = setInterval(() => {
             refreshPlayerData?.();
-        }, 3000);
+        });
 
         return () => clearInterval(refreshInterval);
     }, [refreshPlayerData]);
@@ -130,28 +126,22 @@ const Dashboard = () => {
         setActionOverlay({ type, message });
         overlayTimerRef.current = setTimeout(() => {
             setActionOverlay(null);
-        }, 1800);
+        });
     };
 
     useEffect(() => {
-        const isProd = import.meta.env.PROD;
-        const socket = io(SOCKET_URL, {
-            transports: isProd ? ['polling'] : ['polling', 'websocket'],
-            upgrade: !isProd
-        });
+        const socket = getSocket();
 
-        socketRef.current = socket;
-
-        socket.on('connect', () => {
+        const onConnect = () => {
             socket.emit('dashboard:auction-event', {
                 type: 'DASHBOARD_CONNECTED',
                 teamId: myTeamId,
                 teamName: myTeam?.name || myTeamId,
                 timestamp: new Date().toISOString()
             });
-        });
+        };
 
-        socket.on('auction:admin-event', (event = {}) => {
+        const onAdminEvent = (event = {}) => {
             if (!event?.type) return;
             const actions = auctionActionsRef.current;
 
@@ -226,11 +216,18 @@ const Dashboard = () => {
             if (event.type === 'PLAYER_UPDATED' || event.type === 'PLAYER_CHANGED') {
                 refreshPlayerData?.();
             }
-        });
+        };
+
+        socket.on('connect', onConnect);
+        socket.on('auction:admin-event', onAdminEvent);
+
+        if (socket.connected) {
+            onConnect();
+        }
 
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            socket.off('connect', onConnect);
+            socket.off('auction:admin-event', onAdminEvent);
         };
     }, [refreshPlayerData]);
 
@@ -330,7 +327,7 @@ const Dashboard = () => {
                                             </div> */}
                                             <div className="stat-item">
                                                 <span className="stat-label">Role</span>
-                                                <span className="stat-value">{formatCategory(currentPlayer.category)}</span>
+                                                <span className="stat-value">{formatCategory(currentPlayer?.category)}</span>
                                             </div>
                                             <div className="stat-item">
                                                 <span className="stat-label">Player Rating</span>
