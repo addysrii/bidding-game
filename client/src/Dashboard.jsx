@@ -111,14 +111,7 @@ const Dashboard = () => {
     }, []);
 
     // Periodic refresh of player data - updates every 3 seconds
-    useEffect(() => {
-        refreshPlayerData?.();
-        const refreshInterval = setInterval(() => {
-            refreshPlayerData?.();
-        }, 3000);
 
-        return () => clearInterval(refreshInterval);
-    }, [refreshPlayerData]);
 
     const showActionAnimation = (type, message) => {
         if (overlayTimerRef.current) {
