@@ -267,22 +267,28 @@ export const AuctionProvider = ({ children }) => {
         }
     };
 
-    // AuctionContext.js
-const placeBid = async (teamId, bidAmount, options = {}) => {
+   const placeBid = async (teamId, bidAmount, options = {}) => {
   if (!currentPlayer) return null;
 
-  // optimistic local update
-  setState(prev => ({
-    ...prev,
-    currentPlayer: {
-      ...prev.currentPlayer,
-      currentBid: bidAmount,
-      highestBidder: teamId
-    },
-    highestBidder: teamId
-  }));
+  const playerId = currentPlayer.id;
 
-  // persist unless explicitly disabled
+  // 1️⃣ Optimistic LOCAL update (playerPool is the truth)
+  setPlayerPool(prevPool =>
+    prevPool.map(player => {
+      const id = player?._id || player?.id;
+      if (id !== playerId) return player;
+
+      return {
+        ...player,
+        currentBid: bidAmount,
+        highestBidder: teamId
+      };
+    })
+  );
+
+  setHighestBidder(teamId);
+
+  // 2️⃣ If dashboard event → DO NOT persist
   if (options.persist === false) {
     return {
       ...currentPlayer,
@@ -291,8 +297,10 @@ const placeBid = async (teamId, bidAmount, options = {}) => {
     };
   }
 
+  // 3️⃣ Persist to DB (ADMIN ONLY)
   try {
-    const res = await fetch(`/api/players/${currentPlayer.id}/auction`, {
+    const apiBaseUrl = resolveSocketUrl();
+    const res = await fetch(`${apiBaseUrl}/api/players/${playerId}/auction`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -301,14 +309,20 @@ const placeBid = async (teamId, bidAmount, options = {}) => {
       })
     });
 
+    if (!res.ok) throw new Error('Persist failed');
+
     const updatedPlayer = await res.json();
 
-    // sync final DB truth
-    setState(prev => ({
-      ...prev,
-      currentPlayer: updatedPlayer,
-      highestBidder: updatedPlayer.highestBidder
-    }));
+    // 4️⃣ Sync DB-confirmed truth
+    setPlayerPool(prevPool =>
+      prevPool.map(player => {
+        const id = player?._id || player?.id;
+        if (id !== playerId) return player;
+        return { ...player, ...updatedPlayer };
+      })
+    );
+
+    setHighestBidder(updatedPlayer.highestBidder ?? teamId);
 
     return updatedPlayer;
   } catch (err) {
@@ -746,11 +760,15 @@ const placeBid = async (teamId, bidAmount, options = {}) => {
     const syncAuctionState = (snapshot) => {
   if (!snapshot) return;
 
-  setState(prev => ({
-    ...prev,
-    ...snapshot
-  }));
+  if (snapshot.playerPool) setPlayerPool(snapshot.playerPool);
+  if (snapshot.selectedCategory) setSelectedCategory(snapshot.selectedCategory);
+  if (snapshot.activePlayerIndex !== undefined) setActivePlayerIndex(snapshot.activePlayerIndex);
+  if (snapshot.teams) setTeams(snapshot.teams);
+  if (snapshot.highestBidder !== undefined) setHighestBidder(snapshot.highestBidder);
+  if (snapshot.bidHistory) setBidHistory(snapshot.bidHistory);
+  if (snapshot.auctionLogs) setAuctionLogs(snapshot.auctionLogs);
 };
+
     const refreshPlayerData = async () => {
         if (refreshPlayerDataPromiseRef.current) {
             return refreshPlayerDataPromiseRef.current;
