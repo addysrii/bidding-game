@@ -135,82 +135,73 @@ const Dashboard = () => {
             });
         };
 
-        const onAdminEvent = (event = {}) => {
-            if (!event?.type) return;
-            const actions = auctionActionsRef.current;
+    const onAdminEvent = (event = {}) => {
+  if (!event?.type) return;
 
-            if (event.type === 'BID' && event.teamId && Number.isFinite(Number(event.bidAmount))) {
-                actions.placeBid?.(event.teamId, Number(event.bidAmount), { persist: false });
-            }
-            if (event.type === 'SOLD') {
-                actions.sellPlayer?.({
-                    adminName: event.adminName || 'Admin',
-                    assignedCard: event.assignedCard || null,
-                    player: event.player || null,
-                    persist: false
-                });
-                showActionAnimation(
-                    'SOLD',
-                    `SOLD TO ${(event.teamName || 'TEAM').toUpperCase()}`
-                );
-            }
-            if (event.type === 'UNSOLD') {
-                actions.markUnsold?.({ adminName: event.adminName || 'Admin', persist: false });
-                showActionAnimation(
-                    'UNSOLD',
-                    `UNSOLD: ${(event.playerName || 'PLAYER').toUpperCase()}`
-                );
-            }
-            if (event.type === 'REDO_SOLD_TO_UNSOLD') {
-                actions.redoSoldToUnsold?.({ adminName: event.adminName || 'Admin', persist: false });
-                showActionAnimation(
-                    'REOPEN',
-                    `REOPENED: ${(event.playerName || 'PLAYER').toUpperCase()}`
-                );
-            }
-            if (event.type === 'NEXT_PLAYER') {
-                actions.nextPlayer?.();
-            }
-            if (event.type === 'PREVIOUS_PLAYER') {
-                actions.previousPlayer?.();
-            }
-            if (event.type === 'UNDO') {
-                if (event.stateSnapshot) {
-                    actions.syncAuctionState?.(event.stateSnapshot);
-                } else {
-                    actions.undoLastAction?.();
-                }
-            }
-            if (event.type === 'REDO') {
-                if (event.stateSnapshot) {
-                    actions.syncAuctionState?.(event.stateSnapshot);
-                } else {
-                    actions.redoLastAction?.();
-                }
-            }
-            if (event.type === 'BREAK_START') {
-                const nextBreakEndsAt = Number(event.breakEndsAt) || (Date.now() + ((Number(event.durationSeconds) || 300) * 1000));
-                setBreakEndsAt(nextBreakEndsAt);
-            }
-            if (event.type === 'BREAK_END') {
-                setBreakEndsAt(null);
-            }
-            if (event.type === 'CATEGORY_CHANGED' && event.category) {
-                actions.setActiveCategory?.(event.category);
-            }
-            if (event.type === 'RESET_AUCTION') {
-                if (event.stateSnapshot) {
-                    actions.syncAuctionState?.(event.stateSnapshot);
-                } else {
-                    actions.resetAuction?.();
-                }
-                refreshPlayerData?.();
-            }
-            // Refresh players when admin updates player data
-            if (event.type === 'PLAYER_UPDATED' || event.type === 'PLAYER_CHANGED') {
-                refreshPlayerData?.();
-            }
-        };
+  const actions = auctionActionsRef.current;
+
+  switch (event.type) {
+    case 'BID':
+      if (event.player) {
+        actions.syncAuctionState?.({
+          currentPlayer: event.player,
+          highestBidder: event.teamId
+        });
+      }
+      break;
+
+    case 'SOLD':
+      actions.sellPlayer?.({
+        adminName: event.adminName || 'Admin',
+        assignedCard: event.assignedCard,
+        player: event.player,
+        persist: false
+      });
+      showActionAnimation('SOLD', `SOLD TO ${event.teamName}`);
+      break;
+
+    case 'UNSOLD':
+      actions.markUnsold?.({ persist: false });
+      showActionAnimation('UNSOLD', 'PLAYER UNSOLD');
+      break;
+
+    case 'REDO_SOLD_TO_UNSOLD':
+      actions.redoSoldToUnsold?.({ persist: false });
+      showActionAnimation('REOPEN', 'PLAYER REOPENED');
+      break;
+
+    case 'NEXT_PLAYER':
+      actions.nextPlayer?.();
+      break;
+
+    case 'PREVIOUS_PLAYER':
+      actions.previousPlayer?.();
+      break;
+
+    case 'UNDO':
+    case 'REDO':
+    case 'RESET_AUCTION':
+      if (event.stateSnapshot) {
+        actions.syncAuctionState?.(event.stateSnapshot);
+      }
+      break;
+
+    case 'BREAK_START':
+      setBreakEndsAt(event.breakEndsAt);
+      break;
+
+    case 'BREAK_END':
+      setBreakEndsAt(null);
+      break;
+
+    case 'CATEGORY_CHANGED':
+      actions.setActiveCategory?.(event.category);
+      break;
+
+    default:
+      break;
+  }
+};
 
         socket.on('connect', onConnect);
         socket.on('auction:admin-event', onAdminEvent);
