@@ -267,50 +267,55 @@ export const AuctionProvider = ({ children }) => {
         }
     };
 
-    const placeBid = (teamId, amount, options = {}) => {
-        const shouldPersist = options.persist !== false;
-        if (!currentPlayer) return false;
-        if (currentPlayer?.isClosed) return false;
+    // AuctionContext.js
+const placeBid = async (teamId, bidAmount, options = {}) => {
+  if (!currentPlayer) return null;
 
-        // Validation: verify team has enough funds
-        const team = getTeamById(teamId);
-        if (!team) return false;
+  // optimistic local update
+  setState(prev => ({
+    ...prev,
+    currentPlayer: {
+      ...prev.currentPlayer,
+      currentBid: bidAmount,
+      highestBidder: teamId
+    },
+    highestBidder: teamId
+  }));
 
-        const currentFunds = getFundsInCr(team.funds);
-        const bidInCr = amount / 100;
-
-        if (currentFunds < bidInCr) {
-            alert("Insufficient funds!");
-            return false;
-        }
-
-        runWithHistory(() => {
-            // Update the current player in playerPool with the new bid amount
-            setPlayerPool(prevPool => {
-                const updatedPool = [...prevPool];
-                if (updatedPool[activePlayerIndex]) {
-                    updatedPool[activePlayerIndex] = {
-                        ...updatedPool[activePlayerIndex],
-                        currentBid: amount,
-                        highestBidder: teamId
-                    };
-                }
-                return updatedPool;
-            });
-            setHighestBidder(teamId);
-            setBidHistory(prev => [...prev, { teamId, amount, timestamp: new Date() }]);
-        });
-
-        if (shouldPersist) {
-            persistAuctionState(currentPlayer.id, {
-                currentBid: amount,
-                highestBidder: teamId,
-                soldStatus: 'OPEN',
-                isClosed: false
-            });
-        }
-        return true;
+  // persist unless explicitly disabled
+  if (options.persist === false) {
+    return {
+      ...currentPlayer,
+      currentBid: bidAmount,
+      highestBidder: teamId
     };
+  }
+
+  try {
+    const res = await fetch(`/api/players/${currentPlayer.id}/auction`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        currentBid: bidAmount,
+        highestBidder: teamId
+      })
+    });
+
+    const updatedPlayer = await res.json();
+
+    // sync final DB truth
+    setState(prev => ({
+      ...prev,
+      currentPlayer: updatedPlayer,
+      highestBidder: updatedPlayer.highestBidder
+    }));
+
+    return updatedPlayer;
+  } catch (err) {
+    console.error('Bid persist failed', err);
+    return null;
+  }
+};
 
     const sellPlayer = ({ assignedCard, adminName = 'Admin', persist = true } = {}) => {
         if (!currentPlayer) {
@@ -739,15 +744,13 @@ export const AuctionProvider = ({ children }) => {
     };
 
     const syncAuctionState = (snapshot) => {
-        if (!snapshot) return false;
+  if (!snapshot) return;
 
-        applySnapshot(cloneState(snapshot));
-        undoStackRef.current = [];
-        redoStackRef.current = [];
-        bumpHistoryVersion();
-        return true;
-    };
-
+  setState(prev => ({
+    ...prev,
+    ...snapshot
+  }));
+};
     const refreshPlayerData = async () => {
         if (refreshPlayerDataPromiseRef.current) {
             return refreshPlayerDataPromiseRef.current;
