@@ -143,17 +143,19 @@ const Dashboard = () => {
   switch (event.type) {
     case 'BID':
   if (event.player) {
-    // INSTANT UI UPDATE
+    const playerId = event.player.id || event.player._id;
+
+    // DIRECTLY update playerPool
     actions.syncAuctionState?.({
-      playerPool: prev =>
-        prev.map(p =>
-          (p._id || p.id) === event.player.id
-            ? { ...p, ...event.player }
-            : p
-        ),
+      playerPool: categoryPlayers.map(p =>
+        (p.id === playerId)
+          ? { ...p, ...event.player }
+          : p
+      ),
       highestBidder: event.teamId
     });
   }
+  break;
   break;
 
     case 'SOLD':
