@@ -142,19 +142,13 @@ const Dashboard = () => {
 
   switch (event.type) {
     case 'BID':
-      if (event.player) {
-        actions.syncAuctionState?.({
-          currentPlayer: event.player,
-          highestBidder: event.teamId
-        });
-      }
+      actions.refreshPlayerData?.();
       break;
 
     case 'SOLD':
       actions.sellPlayer?.({
         adminName: event.adminName || 'Admin',
         assignedCard: event.assignedCard,
-        player: event.player,
         persist: false
       });
       showActionAnimation('SOLD', `SOLD TO ${event.teamName}`);
@@ -178,12 +172,16 @@ const Dashboard = () => {
       actions.previousPlayer?.();
       break;
 
-    case 'UNDO':
-    case 'REDO':
     case 'RESET_AUCTION':
       if (event.stateSnapshot) {
         actions.syncAuctionState?.(event.stateSnapshot);
+      } else {
+        actions.refreshPlayerData?.();
       }
+      break;
+
+    case 'CATEGORY_CHANGED':
+      actions.setActiveCategory?.(event.category);
       break;
 
     case 'BREAK_START':
@@ -192,10 +190,6 @@ const Dashboard = () => {
 
     case 'BREAK_END':
       setBreakEndsAt(null);
-      break;
-
-    case 'CATEGORY_CHANGED':
-      actions.setActiveCategory?.(event.category);
       break;
 
     default:
@@ -335,7 +329,7 @@ const Dashboard = () => {
                 <SquadModal
                     team={selectedTeam}
                     isMyTeam={false}
-                    isAdmin={false} z
+                    isAdmin={false} 
                     onClose={() => setSelectedTeam(null)}
                 />
             )}
