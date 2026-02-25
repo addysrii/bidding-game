@@ -253,29 +253,23 @@ const AdminPanel = () => {
             timestamp: new Date().toISOString()
         });
     };
+const handleHighestBid = async (teamId) => {
+  if (isPlayerLocked) return;
 
-    const handleHighestBid = (teamId) => {
-        if (isPlayerLocked) return;
-        const currentBidValue = Number(currentPlayer?.currentBid || 0);
-        const nextBidValue = currentBidValue + getBidIncrement(currentBidValue);
-        const ok = placeBid(teamId, nextBidValue);
-        if (!ok) return;
+  const currentBidValue = Number(currentPlayer?.currentBid || 0);
+  const nextBidValue = currentBidValue + getBidIncrement(currentBidValue);
 
-        const bidTeam = teams.find((team) => team.id === teamId);
-        emitAdminEvent('BID', {
-            teamId,
-            teamName: bidTeam?.name || teamId,
-            bidAmount: nextBidValue,
-            player: { ...currentPlayer, currentBid: nextBidValue } // Sync updated bid
-        });
+  const updatedPlayer = await placeBid(teamId, nextBidValue);
 
-        // Emit player update event to refresh player data on dashboards
-        emitAdminEvent('PLAYER_UPDATED', {
-            playerId: currentPlayer?.id,
-            playerName: currentPlayer?.name
-        });
-    };
+  if (!updatedPlayer) return;
 
+  emitAdminEvent('BID', {
+    teamId,
+    teamName: teams.find(t => t.id === teamId)?.name,
+    bidAmount: updatedPlayer.currentBid,
+    player: updatedPlayer
+  });
+};
     const openSellModal = (teamId = highestBidder) => {
         if (!teamId || isPlayerLocked) return;
         if (teamId !== highestBidder) return;
