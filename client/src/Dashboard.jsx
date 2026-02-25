@@ -142,8 +142,19 @@ const Dashboard = () => {
 
   switch (event.type) {
     case 'BID':
-      actions.refreshPlayerData?.();
-      break;
+  if (event.player) {
+    // INSTANT UI UPDATE
+    actions.syncAuctionState?.({
+      playerPool: prev =>
+        prev.map(p =>
+          (p._id || p.id) === event.player.id
+            ? { ...p, ...event.player }
+            : p
+        ),
+      highestBidder: event.teamId
+    });
+  }
+  break;
 
     case 'SOLD':
       actions.sellPlayer?.({
